@@ -9,6 +9,7 @@ import Data.Map
 --import qualified Data.Map as Map
 import Control.Monad
 import Data.Maybe
+import Data.List
 
 --data BoxedVal a = BoxedVal a deriving (Show)
 data BoxedVal a = BoxedInt Int | BoxedFloat Double deriving (Show)
@@ -19,6 +20,7 @@ data Vec2 a = Vec2 { x :: a, y :: a } deriving (Show)
 --instance Num a => Semigroup (Vec2 a) where
 (|+) (Vec2 x y) (Vec2 u v) = Vec2 (x+u) (y+v)
 (|-) (Vec2 x y) (Vec2 u v) = Vec2 (x-u) (y-v)
+(|*) (Vec2 a b) (Vec2 c d) = Vec2 (a * c - b * d) (a * d + b * c)
 --  Vec2 x y - Vec2 u v = Vec2 (x-u) (y-v)
  {- Vec2 x y * Vec2 u v = Vec2 (x*u) (y*v)
   abs (Vec2 x y) = let h = sqrt (x*x + y*y)
@@ -51,7 +53,7 @@ mapWithKey (\k v -> liftM (getCoefficients 1.1) (getParam k params)) params
 
 getParam :: String -> Map String [(Double, [Double])]  -> Maybe [(Double, [Double])]
 getParam p params = do
-  localP <- lookup p params
+  localP <- Data.Map.lookup p params
   return localP
 
 getPolynomialCoeffs :: Double -> Map String [(Double, [Double])] -> Map String (Maybe [Double])
@@ -82,22 +84,7 @@ makeImageList params rangeT = Prelude.map makeFrame $ Prelude.map (getParamSnaph
 
 writeImageList params baseFilename rangeT = zipWith (\fname image -> writePng fname image) (Prelude.map (\t -> baseFilename ++ "-" ++ show t ++ ".png") rangeT) (makeImageList params rangeT)
 
-{-
-someFunc :: IO ()
-someFunc = do
-  let white = PixelRGBA8 255 255 255 255
-      drawColor = PixelRGBA8 0 0x86 0xc1 255
-      recColor = PixelRGBA8 0xFF 0x53 0x73 255
-      img = renderDrawing 400 200 white $
-        withTexture (uniformTexture drawColor) $
-        do
-          fill $ circle (V2 0 0) 30
-          stroke 4 JoinRound (CapRound, CapRound) $
-            circle (V2 400 200) 40
-          withTexture (uniformTexture recColor) .
-            fill $ rectangle (V2 100 100) 200 100
-  writePng "yourimage.png" img
--}                   
+
 makeFrame :: Map String (Maybe Double) -> Codec.Picture.Image Codec.Picture.PixelRGBA8
 makeFrame params = do
   let white = PixelRGBA8 255 255 255 255
@@ -117,6 +104,11 @@ makeFrame params = do
     img
 --  writePng "yourimage.png" img
 
+data PointMass = PointMass { mass :: Double,
+                             pos :: Vec2 Double,
+                             vel :: Vec2 Double,
+                             acc :: Vec2 Double
+                           } deriving Show
 
 
 viewport2abs vp p =
@@ -125,5 +117,8 @@ viewport2abs vp p =
   in
     Vec2 px py
 
+accelerate :: PointMass -> PointMass
+accelerate pm = pm { pos = (pos pm |+ vel pm), vel = (vel pm |+ acc pm)}
 
+track f pmInit = unfoldr (\(numSteps, pm) -> if numSteps <= 0 then Nothing else Just ((numSteps,pm),(numSteps - 1, f pm))) pmInit
 
