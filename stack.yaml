@@ -41,6 +41,9 @@ packages:
 extra-deps:
 - Map-0.0.0.0
 - either-both-0.1.0.0
+
+#- complex-generic-0.1.1.1
+#- split
 #- Rasterific
 #- JuicyPixels
 #- Map
