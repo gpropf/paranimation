@@ -3,6 +3,7 @@ module Util where
 import Codec.Picture( Image, PixelRGBA8( .. ), writePng )
 import Graphics.Rasterific
 import Graphics.Rasterific.Texture
+import Number.Complex
 
 data BoxedVal a = BoxedInt Int | BoxedFloat Double deriving (Show)
 
@@ -13,6 +14,8 @@ data Vec2 a = Vec2 { x :: a, y :: a } deriving (Show)
 (|+) (Vec2 x y) (Vec2 u v) = Vec2 (x+u) (y+v)
 (|-) (Vec2 x y) (Vec2 u v) = Vec2 (x-u) (y-v)
 (|*) (Vec2 a b) (Vec2 c d) = Vec2 (a * c - b * d) (a * d + b * c)
+vec2Scale s v = Vec2 (s * (x v)) (s * (y v))
+
 v2abs (Vec2 a b) = sqrt ((a*a) + (b*b))
 --  Vec2 x y - Vec2 u v = Vec2 (x-u) (y-v)
  {- Vec2 x y * Vec2 u v = Vec2 (x*u) (y*v)
@@ -50,3 +53,5 @@ viewport2abs vp p =
       py  = ((y $ upperLeft vp) - y p) * (y $ scaleFactors vp)
   in
     toV2 $ Vec2 px py
+
+complex2Vec2 c = Vec2 (real c) (imag c)
