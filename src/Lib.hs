@@ -12,6 +12,7 @@ import Data.Maybe
 import Data.List
 import Number.Complex
 import Params
+import Text.Printf
 
 --data BoxedVal a = BoxedVal a deriving (Show)
 
@@ -46,7 +47,14 @@ getCoefficients t coeffThresholds =
   
 makeImageList params rangeT = Prelude.map makeFrame2 $ Prelude.map (getParamSnaphot2 params) rangeT
 
-writeImageList params baseFilename rangeT = zipWith (\fname image -> Codec.Picture.writePng fname image) (Prelude.map (\t -> baseFilename ++ "-" ++ show t ++ ".png") rangeT) (makeImageList params rangeT)
+writeImageList params baseFilename rangeT =
+  let lenRangeT = length rangeT
+      numZeros = length (show lenRangeT)
+      imageIndexes = [0..lenRangeT]
+      fmtString = "%0" ++ show numZeros ++ "d"
+      fmt x = printf fmtString x
+  in
+    zipWith (\fname image -> Codec.Picture.writePng fname image) (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes) (makeImageList params rangeT)
 
 
 -- drawTrack :: [PointMass]

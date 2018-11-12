@@ -22,7 +22,7 @@ params = fromList ([("r", [(0.5, [5]), (10.0, [ 20, 20 ]), (20.0, [ 60, 5, 30])]
                    , ("vx", [(0.5, [0.1,0.2]), (100.0, [ (-0.1), (0.2)])])
                    , ("vy", [(0.5, [0.1,0.0]), (10.0, [ (0.1), (0.2)])])
                    , ("y", [(0.0, [ 1, 2, 3]), (1.0, [ 10, 20, 30]), (2.0, [ 101, 201, 301])])
-                   , ("accelCoeff", [(100.0, [ 0, 0.00002])])
+                   , ("accelCoeff", [(100.0, [ 0, 0.2])])
                    , ("pwr", [(100.0, [ 0, 1.0])])])
 
 
@@ -47,14 +47,17 @@ vp = Viewport { upperLeft = Vec2 (-2) (1.5), scaleFactors = Vec2 200 200}
 
 
 drawTrack t = do
+  let velMax = maximum $ Data.List.map (\(p1,p2) -> (v2abs . vel) p2) t
+      accMax = maximum $ Data.List.map (\(p1,p2) -> (v2abs . acc) p2) t
   mapM_ (\(pmStart, pmEnd) ->
-          let red = round (((v2abs (vel pmStart) * 200) + (v2abs (vel pmEnd) * 200))/2)
-              blue =round (((v2abs (acc pmStart) * 200) + (v2abs (acc pmEnd) * 200))/2)
-              colr = PixelRGBA8 red 0 blue 255
-          in
-            withTexture (uniformTexture colr) $
-            stroke 3 JoinRound (CapRound, CapRound) $
-            line (viewport2abs vp (pos pmStart)) (viewport2abs vp (pos pmEnd))) t
+            let red = round (v2abs (vel pmStart) / velMax * 255)
+                blue = round (v2abs (acc pmStart) / accMax * 255)
+                --  ((v2abs (acc pmStart) * 200) + (v2abs (acc pmEnd) * 200))/2)
+                colr = PixelRGBA8 red 0 blue 255
+            in
+              withTexture (uniformTexture colr) $
+              stroke 3 JoinRound (CapRound, CapRound) $
+              line (viewport2abs vp (pos pmStart)) (viewport2abs vp (pos pmEnd))) t
             
 
 
@@ -73,15 +76,15 @@ makeFrame2 params = do
       pms = track accelerate (20,pm')
       zpms = chunkTrack pms -}
 
-      pmInits = Data.List.map (\v -> pm { vel = v }) $ Data.List.map (vec2Scale 0.01) $ radialVectors 60
-      tracks = Data.List.map (\pm -> track (accelerate accelCoeff pwr) (30, pm)) $ pmInits
+      pmInits = Data.List.map (\v -> pm { vel = v }) $ Data.List.map (vec2Scale 1) $ radialVectors 60
+      tracks = Data.List.map (\pm -> track (accelerate accelCoeff pwr) (200, pm)) $ pmInits
       tracksChunked = Data.List.map chunkTrack tracks
       img = renderDrawing 800 600 white $
         withTexture (uniformTexture drawColor) $
         do
-          fill $ circle (V2 0 0) 30
-          stroke 4 JoinRound (CapRound, CapRound) $
-            circle (V2 400 200) (40 + realToFrac r)
+          -- fill $ circle (V2 0 0) 30
+          -- stroke 4 JoinRound (CapRound, CapRound) $
+            -- circle (V2 400 200) (40 + realToFrac r)
           --drawTrack zpms
           mapM_ drawTrack tracksChunked
     in
@@ -99,8 +102,11 @@ accelerate :: Double -> Double -> PointMass -> PointMass
 accelerate accelCoeff pwr pm =
   let pmPos = pos pm
       complexPos = (x pmPos) +: (y pmPos)
+      pmVel = vel pm
+      pmVelMag = v2abs pmVel
+      t = if pmVelMag > 0.01 then 0.01 / pmVelMag else 1
   in
-    pm { pos = (pos pm |+ vel pm)
+    pm { pos = (pos pm |+ (vec2Scale t $ vel pm))
        , vel = (vel pm |+ acc pm)
        , acc = complex2Vec2 $ scale accelCoeff $ power (realToFrac pwr) complexPos}
 
