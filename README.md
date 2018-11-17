@@ -1,4 +1,4 @@
-# paramovie: Parametric Movies
+# Paranimation: Parametric Movies
 
 This is a small library and app to generate computer graphics that evolve according to changing parameters. A good example would be a zoom into a Mandelbrot set where the bounds of the viewport change over time. We plan on having two main elements in this system. One might be called the framemaker, the other is the interpolator. The framemaker's job is to take an associative array of arbitrary parameters and generate one image. The interpolator uses a file describing the way these parameters change over time. This is probably just going to be a small Haskell program itself defining an AA that contains the same hash keys as the ones passed to the framemaker but also has some data showing how the parameters evolve. All parameters are ultimately functions of an abstract time index.
 
