@@ -53,8 +53,20 @@ complex2Vec2 c = Vec2 (real c) (imag c)
 
 interpolate (t1, v1) (t2,v2) t =
   case (v1,v2) of
-    (BoxedDouble v1d, BoxedDouble v2d) -> BoxedDouble (v2d - v1d)
-    (BoxedInt v1i, BoxedInt v2i) -> BoxedInt (v2i - v1i)
+    (BoxedDouble v1d, BoxedDouble v2d) ->
+      let rise = v2d - v1d
+          m = rise / run
+          b = v1d - m * t1
+      in
+        BoxedDouble (m * t + b)
+    (BoxedInt v1i, BoxedInt v2i) ->
+      let rise = fromIntegral $ v2i - v1i
+          m = rise / run
+          b = fromIntegral v1i - m * t1
+      in
+        BoxedInt (round (m * t + b))
     (_,_) -> BoxedInt 0
+  where
+    run = t2 - t1
 
                
