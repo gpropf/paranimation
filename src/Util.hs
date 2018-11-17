@@ -6,7 +6,7 @@ import Graphics.Rasterific.Texture
 import Number.Complex
 import Graphics.Rasterific.Linear
 
-data BoxedVal a = BoxedInt Int | BoxedFloat Double deriving (Show)
+data BoxedVal a = BoxedInt Int | BoxedDouble Double | BoxedList [a] deriving (Show)
 
 data Vec2 a = Vec2 { x :: a, y :: a } deriving (Show)
 
@@ -49,3 +49,12 @@ viewport2abs vp p =
 
 complex2Vec2 :: Number.Complex.T a -> Vec2 a
 complex2Vec2 c = Vec2 (real c) (imag c)
+
+
+interpolate (t1, v1) (t2,v2) t =
+  case (v1,v2) of
+    (BoxedDouble v1d, BoxedDouble v2d) -> BoxedDouble (v2d - v1d)
+    (BoxedInt v1i, BoxedInt v2i) -> BoxedInt (v2i - v1i)
+    (_,_) -> BoxedInt 0
+
+               

@@ -14,9 +14,6 @@ import Number.Complex
 import Params
 import Text.Printf
 
---data BoxedVal a = BoxedVal a deriving (Show)
-
-
 polynomialSnapshot :: Double -> Map String [(Double, [Double])] -> Map String (Maybe [Double])
 polynomialSnapshot t params = Data.Map.mapWithKey (\k v -> Control.Monad.liftM (coeffDomains t) (Data.Map.lookup k params)) params
 
