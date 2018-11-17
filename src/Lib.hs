@@ -16,25 +16,20 @@ import Text.Printf
 
 --data BoxedVal a = BoxedVal a deriving (Show)
 
-getParam :: String -> Map String [(Double, [Double])]  -> Maybe [(Double, [Double])]
-getParam p params = do
-  localP <- Data.Map.lookup p params
-  return localP
 
-getPolynomialCoeffs :: Double -> Map String [(Double, [Double])] -> Map String (Maybe [Double])
-getPolynomialCoeffs t params = Data.Map.mapWithKey (\k v -> Control.Monad.liftM (getCoefficients t) (getParam k params)) params
+polynomialSnapshot :: Double -> Map String [(Double, [Double])] -> Map String (Maybe [Double])
+polynomialSnapshot t params = Data.Map.mapWithKey (\k v -> Control.Monad.liftM (coeffDomains t) (Data.Map.lookup k params)) params
 
-getParamSnaphot :: (Monad m, Num r) => r -> Map k (m [r]) -> Map k (m r)
-getParamSnaphot t params = Data.Map.mapWithKey (\k v -> Control.Monad.liftM (evaluatePolynomial t) v) params
 
-getParamSnaphot2 params t = Data.Map.mapWithKey (\k v -> Control.Monad.liftM (evaluatePolynomial t) v) $ getPolynomialCoeffs t params
+paramSnaphot :: Data.Map.Map String [(Double, [Double])] -> Double -> Data.Map.Map String (Maybe Double)
+paramSnaphot params t = Data.Map.mapWithKey (\k v -> Control.Monad.liftM (evaluatePolynomial t) v) $ polynomialSnapshot t params
 
 evaluatePolynomial :: Num a => a -> [a] -> a
 evaluatePolynomial t coeffs = sum $ Prelude.map (\(i,c) -> c*t^i) $ Prelude.zip [0..] coeffs
 
 
-getCoefficients :: Ord t => t -> [(t, [a])] -> [a]
-getCoefficients t coeffThresholds =
+coeffDomains :: Ord t => t -> [(t, [a])] -> [a]
+coeffDomains t coeffThresholds =
   if Prelude.null coeffThresholds
      then []
   else let c:cs = coeffThresholds
@@ -42,11 +37,14 @@ getCoefficients t coeffThresholds =
        in
          if t <= threshold then coeffList
          else
-           getCoefficients t cs
+           coeffDomains t cs
 
-  
-makeImageList params rangeT = Prelude.map makeFrame2 $ Prelude.map (getParamSnaphot2 params) rangeT
 
+makeImageList :: Data.Map.Map String [(Double, [Double])] -> [Double] -> [Codec.Picture.Image Codec.Picture.PixelRGBA8]  
+makeImageList params rangeT = Prelude.map makeFrame $ Prelude.map (paramSnaphot params) rangeT
+
+
+writeImageList :: Data.Map.Map String [(Double, [Double])] -> [Char] -> [Double] -> [IO ()]
 writeImageList params baseFilename rangeT =
   let lenRangeT = length rangeT
       numZeros = length (show lenRangeT)
