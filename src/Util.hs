@@ -6,7 +6,10 @@ import Graphics.Rasterific.Texture
 import Number.Complex
 import Graphics.Rasterific.Linear
 
-data BoxedVal a = BoxedInt Int | BoxedDouble Double | BoxedList [a] deriving (Show)
+data BoxedVal a = BoxedInt Int
+  | BoxedDouble Double
+  | BoxedList [a]
+  | BoxedVec2 (Vec2 a) deriving (Show)
 
 data Vec2 a = Vec2 { x :: a, y :: a } deriving (Show)
 
@@ -65,6 +68,19 @@ interpolate (t1, v1) (t2,v2) t =
           b = fromIntegral v1i - m * t1
       in
         BoxedInt (round (m * t + b))
+    (BoxedVec2 v1, BoxedVec2 v2) ->
+      let v1x = x v1
+          v1y = y v1
+          v2x = x v2
+          v2y = y v2
+          riseX = v2x - v1x
+          riseY = v2y - v1y
+          mx = riseX / run
+          my = riseY / run
+          bx = v1x - mx * t1
+          by = v1y - my * t1
+      in
+        BoxedVec2 (Vec2 (mx * t + bx) (my * t + by))
     (_,_) -> BoxedInt 0
   where
     run = t2 - t1
