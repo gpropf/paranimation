@@ -53,7 +53,7 @@ viewport2abs vp p =
 complex2Vec2 :: Number.Complex.T a -> Vec2 a
 complex2Vec2 c = Vec2 (real c) (imag c)
 
-
+interpolate :: (Num a, Integral a) => (Double, BoxedVal a) -> (Double, BoxedVal a) -> Double -> BoxedVal Double
 interpolate (t1, v1) (t2,v2) t =
   case (v1,v2) of
     (BoxedDouble v1d, BoxedDouble v2d) ->
@@ -69,10 +69,10 @@ interpolate (t1, v1) (t2,v2) t =
       in
         BoxedInt (round (m * t + b))
     (BoxedVec2 v1, BoxedVec2 v2) ->
-      let v1x = x v1
-          v1y = y v1
-          v2x = x v2
-          v2y = y v2
+      let v1x = fromIntegral $ x v1
+          v1y = fromIntegral $ y v1
+          v2x = fromIntegral $ x v2
+          v2y = fromIntegral $ y v2
           riseX = v2x - v1x
           riseY = v2y - v1y
           mx = riseX / run
