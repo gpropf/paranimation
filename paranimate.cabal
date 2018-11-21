@@ -6,11 +6,11 @@ cabal-version: 1.12
 --
 -- hash: 6435a1ea106c3b900d4faec757a24a28c123be4f0c99f6230277da2e0068c81b
 
-name:           paramovie
+name:           paranimate
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/paramovie#readme>
-homepage:       https://github.com/githubuser/paramovie#readme
-bug-reports:    https://github.com/githubuser/paramovie/issues
+description:    Please see the README on GitHub at <https://github.com/githubuser/paranimate#readme>
+homepage:       https://github.com/githubuser/paranimate#readme
+bug-reports:    https://github.com/githubuser/paranimate/issues
 author:         Author name here
 maintainer:     example@example.com
 copyright:      2018 Author name here
@@ -23,7 +23,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/paramovie
+  location: https://github.com/githubuser/paranimate
 
 library
   hs-source-dirs:
@@ -38,26 +38,26 @@ library
   exposed-modules:
       Lib, Params, Util
   other-modules:
-      Paths_paramovie
+      Paths_paranimate
   default-language: Haskell2010
 
-executable paramovie-exe
+executable paranimate-exe
   main-is: Main.hs
   hs-source-dirs:
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-              , paramovie
+              , paranimate
               , Rasterific
               , JuicyPixels
               , containers
               , numeric-prelude
   other-modules:
-      Paths_paramovie
+      Paths_paranimate
   default-language: Haskell2010
 
-test-suite paramovie-test
+test-suite paranimate-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   hs-source-dirs:
@@ -65,7 +65,7 @@ test-suite paramovie-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , paramovie
+    , paranimate
   other-modules:
-      Paths_paramovie
+      Paths_paranimate
   default-language: Haskell2010

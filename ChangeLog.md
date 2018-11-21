@@ -1,3 +1,3 @@
-# Changelog for paramovie
+# Changelog for paranimate
 
 ## Unreleased changes
