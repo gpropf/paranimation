@@ -66,12 +66,12 @@ chunkTrack t = let (tEven1,tOdd1) = Data.List.partition (\(i,pm) -> i `mod` 2 ==
 
 
 drawTrack t = do
-  let velMax = maximum $ Data.List.map (\(p1,p2) -> (v2abs . vel) p2) t
-      accMax = maximum $ Data.List.map (\(p1,p2) -> (v2abs . acc) p2) t
+  let velMax = maximum $ Data.List.map (\(p1,p2) -> (vec2abs . vel) p2) t
+      accMax = maximum $ Data.List.map (\(p1,p2) -> (vec2abs . acc) p2) t
   mapM_ (\(pmStart, pmEnd) ->
-            let red = round (v2abs (vel pmStart) / velMax * 255)
-                blue = round (v2abs (acc pmStart) / accMax * 255)
-                --  ((v2abs (acc pmStart) * 200) + (v2abs (acc pmEnd) * 200))/2)
+            let red = round (vec2abs (vel pmStart) / velMax * 255)
+                blue = round (vec2abs (acc pmStart) / accMax * 255)
+                --  ((vec2abs (acc pmStart) * 200) + (vec2abs (acc pmEnd) * 200))/2)
                 colr = PixelRGBA8 red 0 blue 255
             in
               withTexture (uniformTexture colr) $
@@ -105,12 +105,12 @@ accelerate accelCoeff pwr pm =
   let pmPos = pos pm
       complexPos = (x pmPos) +: (y pmPos)
       pmVel = vel pm
-      pmVelMag = v2abs pmVel
+      pmVelMag = vec2abs pmVel
       t = if pmVelMag > 0.01 then 0.01 / pmVelMag else 1
   in
     pm { pos = (pos pm |+ (vec2Scale t $ vel pm))
        , vel = (vel pm |+ acc pm)
-       , acc = complex2Vec2 $ scale accelCoeff $ power (realToFrac pwr) complexPos}
+       , acc = vec2fromComplex $ scale accelCoeff $ power (realToFrac pwr) complexPos}
 
 
 track :: (Ord a, Num a) => (t -> t) -> (a, t) -> [(a, t)]
