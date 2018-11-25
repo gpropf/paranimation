@@ -5,11 +5,37 @@ import Graphics.Rasterific
 import Graphics.Rasterific.Texture
 import Number.Complex
 import Graphics.Rasterific.Linear
+import Algebra.Ring( C )
 
 data BoxedVal a = BoxedInt Int
   | BoxedDouble Double
   | BoxedList [a]
   | BoxedVec2 (Vec2 a) deriving (Show)
+
+data BV a = BV a | BVC (Number.Complex.T a) deriving (Show)
+
+BV x `nplus` BV y = BV (x+y)
+BVC x `nplus` BVC y = BVC $ (real x + real y) +: (imag x + imag y)
+
+BV x `nminus` BV y = BV (x-y)
+BVC x `nminus` BVC y = BVC $ (real x - real y) +: (imag x - imag y)
+
+BV x `mulByScalar` s = BV (x * s)
+BVC x `mulByScalar` s = BVC (scale s x)
+
+
+interpolate2 :: (Fractional a, Algebra.Ring.C a) => (a, BV a) -> (a, BV a) -> a -> BV a
+interpolate2 (t1, v1) (t2, v2) t =
+  let rise = v1 `nminus` v2
+      run = t1 - t2
+      m = rise `mulByScalar` (1/run)
+      b = v1 `nminus` (m `mulByScalar` t1)
+      boxedVal = ((m `mulByScalar` t) `nplus` b)
+  in
+    boxedVal
+
+    
+  
 
 data Vec2 a = Vec2 { x :: a, y :: a } deriving (Show)
 
@@ -52,6 +78,37 @@ viewport2abs vp p =
 
 vec2fromComplex :: Number.Complex.T a -> Vec2 a
 vec2fromComplex c = Vec2 (real c) (imag c)
+
+
+i3 = 3 :: Int
+i5 = 5 :: Int
+i4 = 4 :: Int
+i7 = 7 :: Int
+
+t0 = 1.0
+t1 = 5.0
+
+v1 = Vec2 1 0
+v2 = Vec2 0 1
+
+{- nplus :: (Num t) => BV t -> BV t -> BV t  
+n1 `nplus` n2 =
+  case (n1,n2) of
+    (BV c1, BV c2) -> BV $ (real c1 + real c2) +: (imag c1 + imag c2)
+    (_,_) -> BV 0
+   -} 
+
+{-
+interpolate2 :: (Num a) => (Double, BV a) -> (Double, BV a) -> Double -> BV a
+interpolate2 (t1, BV v1) (t2, BV v2) t =
+  let rise = fromIntegral v2 - fromIntegral v1
+      run = t2 - t1
+      m = rise / run
+      b = fromIntegral v1 - m * t1
+  in
+    
+    BV $ fromIntegral (m * t + b)
+    -}
 
 interpolate :: (Num a, Integral a) => (Double, BoxedVal a) -> (Double, BoxedVal a) -> Double -> BoxedVal Double
 interpolate (t1, v1) (t2,v2) t =
