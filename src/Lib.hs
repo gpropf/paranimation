@@ -51,6 +51,6 @@ writeImageList params baseFilename rangeT =
   in
     zipWith (\fname image -> Codec.Picture.writePng fname image) (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes) (makeImageList params rangeT)
 
-
+foo x y = x + y
 -- drawTrack :: [PointMass]
-
+writeImageListNoFilename params rangeT = sequence_ $ (writeImageList params "dyntest" rangeT)

@@ -12,12 +12,12 @@ import Control.Monad
 import Data.Maybe
 import Data.List
 import Number.Complex
-import Util
+import ParamUtil
 import Algebra.Transcendental
 import Graphics.Rasterific
 -- import Graphics.Rasterific.Command
 
-
+foo = "FOOOOOOO!"
 
 data PointMass = PointMass { mass :: Double,
                              pos :: Vec2 Double,
