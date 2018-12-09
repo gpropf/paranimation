@@ -1,3 +1,7 @@
+-- {-# LANGUAGE AllowAmbiguousTypes, MultiParamTypeClasses #-}
+
+
+
 module ParamUtil where
 
 import Codec.Picture( Image, PixelRGBA8( .. ), writePng )
@@ -6,25 +10,35 @@ import Graphics.Rasterific.Texture
 import Number.Complex
 import Graphics.Rasterific.Linear
 import Algebra.Ring( C )
-
+{-
 data BoxedVal a = BoxedInt Int
   | BoxedDouble Double
   | BoxedList [a]
   | BoxedVec2 (Vec2 a) deriving (Show)
+-}
 
-data BV a = BV a | BVC (Number.Complex.T a) deriving (Show)
+data BV a =
+  BV a
+  | BVC (Number.Complex.T a)
+  | BVI Int
+  deriving (Show)
 
 BV x `nplus` BV y = BV (x+y)
+BVI x `nplus` BVI y = BVI (x+y)
+--BVI x `nplus` BVI y = BVI (x+y)
 BVC x `nplus` BVC y = BVC $ (real x + real y) +: (imag x + imag y)
 
 BV x `nminus` BV y = BV (x-y)
+BVI x `nminus` BVI y = BVI (x-y)
 BVC x `nminus` BVC y = BVC $ (real x - real y) +: (imag x - imag y)
 
 BV x `mulByScalar` s = BV (x * s)
+BVI x `mulByScalar` s = BV ((fromIntegral x) * s)
 BVC x `mulByScalar` s = BVC (scale s x)
 
 
-interpolate2 :: (Fractional a, Algebra.Ring.C a) => (a, BV a) -> (a, BV a) -> a -> BV a
+
+--interpolate2 :: (Fractional a, Algebra.Ring.C a) => (a, BV a) -> (a, BV a) -> a -> BV a
 interpolate2 (t1, v1) (t2, v2) t =
   let rise = v1 `nminus` v2
       run = t1 - t2
@@ -85,12 +99,23 @@ i5 = 5 :: Int
 i4 = 4 :: Int
 i7 = 7 :: Int
 
-t0 = 1.0
-t1 = 5.0
+f3 = 3 :: Float
+f6 = 6 :: Float 
+
+
+t1 = 1.0
+t2 = 5.0
 
 v1 = Vec2 1 0
 v2 = Vec2 0 1
 
+c1 = 4 +: 0
+c2 = 0 +: 4
+
+pFloat = interpolate2 (t1, BV f3) (t2, BV f6) 4.0
+pCmplx = interpolate2 (t1, BVC c1) (t2, BVC c2) 3.0
+pInt = interpolate2 (t1, BVI i3) (t2, BVI i7) 3.0
+--pInt = interpolate2 (t1, BV i3) (t2, BV i7) 4.0
 {- nplus :: (Num t) => BV t -> BV t -> BV t  
 n1 `nplus` n2 =
   case (n1,n2) of
@@ -109,7 +134,7 @@ interpolate2 (t1, BV v1) (t2, BV v2) t =
     
     BV $ fromIntegral (m * t + b)
     -}
-
+{-
 interpolate :: (Num a, Integral a) => (Double, BoxedVal a) -> (Double, BoxedVal a) -> Double -> BoxedVal Double
 interpolate (t1, v1) (t2,v2) t =
   case (v1,v2) of
@@ -143,3 +168,4 @@ interpolate (t1, v1) (t2,v2) t =
     run = t2 - t1
 
                
+-}
