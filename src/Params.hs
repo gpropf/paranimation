@@ -54,7 +54,9 @@ params = fromList ([("r", [(0.5, [5]), (10.0, [ 20, 20 ]), (20.0, [ 60, 5, 30])]
 params = fromList ([("pwr", [(100.0, [ 0, 1.0])])
                    , ("accelCoeff", [(100.0, [ 0, 0.2])])])
 
+curveHash = fromList ([("pwr", curvePoints)])
 
+curvePoints = [(0.0,BV 3.0),(50.0,BV 6.0),(100.0,BV 8.0)]
 
 chunkTrack :: Integral a => [(a, b)] -> [(b, b)]
 chunkTrack t = let (tEven1,tOdd1) = Data.List.partition (\(i,pm) -> i `mod` 2 == 0) $ Data.List.drop 1 t

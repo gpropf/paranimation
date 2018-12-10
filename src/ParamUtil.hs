@@ -10,6 +10,10 @@ import Graphics.Rasterific.Texture
 import Number.Complex
 import Graphics.Rasterific.Linear
 import Algebra.Ring( C )
+import Data.List
+import Data.Map
+import Data.Maybe
+
 {-
 data BoxedVal a = BoxedInt Int
   | BoxedDouble Double
@@ -24,12 +28,14 @@ data BV a =
   deriving (Show)
 
 BV x `nplus` BV y = BV (x+y)
+BV x `nplus` BVI y = BVI $ round (x + (fromIntegral y))
 BVI x `nplus` BVI y = BVI (x+y)
 --BVI x `nplus` BVI y = BVI (x+y)
 BVC x `nplus` BVC y = BVC $ (real x + real y) +: (imag x + imag y)
 
 BV x `nminus` BV y = BV (x-y)
 BVI x `nminus` BVI y = BVI (x-y)
+BVI x `nminus` BV y = BVI (round $ (fromIntegral x) - y)
 BVC x `nminus` BVC y = BVC $ (real x - real y) +: (imag x - imag y)
 
 BV x `mulByScalar` s = BV (x * s)
@@ -38,8 +44,8 @@ BVC x `mulByScalar` s = BVC (scale s x)
 
 
 
---interpolate2 :: (Fractional a, Algebra.Ring.C a) => (a, BV a) -> (a, BV a) -> a -> BV a
-interpolate2 (t1, v1) (t2, v2) t =
+linearInterpolate :: (RealFrac a, Fractional a, Algebra.Ring.C a) => (a, BV a) -> (a, BV a) -> a -> BV a
+linearInterpolate (t1, v1) (t2, v2) t =
   let rise = v1 `nminus` v2
       run = t1 - t2
       m = rise `mulByScalar` (1/run)
@@ -48,7 +54,16 @@ interpolate2 (t1, v1) (t2, v2) t =
   in
     boxedVal
 
-    
+interpolatedValue interpFn t keyStr hash =
+  let curvePoints = fromMaybe [] $ Data.Map.lookup keyStr hash
+  in
+    valueOnCurve interpFn curvePoints t
+
+valueOnCurve interpFn curvePoints t =
+  let (lts,gts) = Data.List.partition (\(tn,vn) -> t >= tn) curvePoints
+      
+  in
+    interpFn (last lts) (head gts) t
   
 
 data Vec2 a = Vec2 { x :: a, y :: a } deriving (Show)
@@ -112,60 +127,6 @@ v2 = Vec2 0 1
 c1 = 4 +: 0
 c2 = 0 +: 4
 
-pFloat = interpolate2 (t1, BV f3) (t2, BV f6) 4.0
-pCmplx = interpolate2 (t1, BVC c1) (t2, BVC c2) 3.0
-pInt = interpolate2 (t1, BVI i3) (t2, BVI i7) 3.0
---pInt = interpolate2 (t1, BV i3) (t2, BV i7) 4.0
-{- nplus :: (Num t) => BV t -> BV t -> BV t  
-n1 `nplus` n2 =
-  case (n1,n2) of
-    (BV c1, BV c2) -> BV $ (real c1 + real c2) +: (imag c1 + imag c2)
-    (_,_) -> BV 0
-   -} 
-
-{-
-interpolate2 :: (Num a) => (Double, BV a) -> (Double, BV a) -> Double -> BV a
-interpolate2 (t1, BV v1) (t2, BV v2) t =
-  let rise = fromIntegral v2 - fromIntegral v1
-      run = t2 - t1
-      m = rise / run
-      b = fromIntegral v1 - m * t1
-  in
-    
-    BV $ fromIntegral (m * t + b)
-    -}
-{-
-interpolate :: (Num a, Integral a) => (Double, BoxedVal a) -> (Double, BoxedVal a) -> Double -> BoxedVal Double
-interpolate (t1, v1) (t2,v2) t =
-  case (v1,v2) of
-    (BoxedDouble v1d, BoxedDouble v2d) ->
-      let rise = v2d - v1d
-          m = rise / run
-          b = v1d - m * t1
-      in
-        BoxedDouble (m * t + b)
-    (BoxedInt v1i, BoxedInt v2i) ->
-      let rise = fromIntegral $ v2i - v1i
-          m = rise / run
-          b = fromIntegral v1i - m * t1
-      in
-        BoxedInt (round (m * t + b))
-    (BoxedVec2 v1, BoxedVec2 v2) ->
-      let v1x = fromIntegral $ x v1
-          v1y = fromIntegral $ y v1
-          v2x = fromIntegral $ x v2
-          v2y = fromIntegral $ y v2
-          riseX = v2x - v1x
-          riseY = v2y - v1y
-          mx = riseX / run
-          my = riseY / run
-          bx = v1x - mx * t1
-          by = v1y - my * t1
-      in
-        BoxedVec2 (Vec2 (mx * t + bx) (my * t + by))
-    (_,_) -> BoxedInt 0
-  where
-    run = t2 - t1
-
-               
--}
+pFloat = linearInterpolate (t1, BV f3) (t2, BV f6) 4.0
+pCmplx = linearInterpolate (t1, BVC c1) (t2, BVC c2) 3.0
+pInt = linearInterpolate (t1, BVI i3) (t2, BVI i7) 3.0
