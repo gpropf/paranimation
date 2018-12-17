@@ -46,12 +46,12 @@ rnlm = do r <- runInterpreter testHint
 testHint =
     do
       say "Load ./src/Params.hs"
-      loadModules ["../src/Params.hs", "../src/Lib.hs"]
+      loadModules ["../src/Params.hs", "../src/ParamUtil.hs", "../src/Lib.hs"]
       --oadModules ["../src/Lib.hs"]
       emptyLine
       say "Put the Prelude, Data.Map and *Params in scope"
       say "Data.Map is qualified as M!"
-      setTopLevelModules ["Params","Lib"]
+      setTopLevelModules ["Params","ParamUtil","Lib"]
       setImportsQ [("Prelude", Nothing), ("Data.Map", Just "M")]
       emptyLine
       say "Now we can query the type of an expression"
@@ -61,7 +61,7 @@ testHint =
       --emptyLine 
       --paramArg <- eval params
       -- say $ show paramArg
-      runStmt "wil <- sequence $ (Lib.writeImageList2 paramHash \"dyntest\" [1.0,2.0..99.0])"
+      runStmt "wil <- sequence $ (ParamUtil.writeImageList2 paramHash \"dyntest\" [1.0,2.0..99.0])"
       --say $ show writeImageListFn
       --let rng = "[0,2.0..8.0]"
       emptyLine 
