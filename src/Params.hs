@@ -17,7 +17,7 @@ import Algebra.Transcendental
 import Graphics.Rasterific
 -- import Graphics.Rasterific.Command
 
-foo = "FOOOOOOO!"
+--foo = "FOOOOOOO!"
 
 data PointMass = PointMass { mass :: Double,
                              pos :: Vec2 Double,
@@ -30,33 +30,13 @@ z = Vec2 0 0
 pm = PointMass 4 z (Vec2 0.1 0.1) (Vec2 (-0.01) 0.02)
 vp = Viewport { upperLeft = Vec2 (-2) (1.5), scaleFactors = Vec2 200 200}
 
--- - End global vars and data structures
--- --------------------------------------------------
-{-
--- Example of complex parameter domains using arbitrary powers of the independent
--- (controlling) parameter to compute dependent variables. We will call this variable 't'
--- from this point forward. The value associated with each key is a list of tuples
--- (b, [c1,c2,...,cn]) where b is the upper bound of the value of t for which the
--- polynomial coefficients c1,c2,...,cn are meant to hold. Thus (4.0, [3, 2, 5]) means
--- that for values of t less than 4.0 the dependent variable in question is
--- given by 3 * t^0 + 2 * t^1 + 5 * t^2 or 3 + 2t + 5t^2 in conventional polynomial
--- notation.
+--curveHash = fromList ([("pwr", curvePoints)])
 
-params :: Map String [(Double, [Double])]
-params = fromList ([("r", [(0.5, [5]), (10.0, [ 20, 20 ]), (20.0, [ 60, 5, 30])])
-                   , ("x", [(0.0, [1,2,3]), (1.0, [ 10, 20, 30]), (2.0, [ 100, 200, 300])])
-                   , ("vx", [(0.5, [0.1,0.2]), (100.0, [ (-0.1), (0.2)])])
-                   , ("vy", [(0.5, [0.1,0.0]), (10.0, [ (0.1), (0.2)])])
-                   , ("y", [(0.0, [ 1, 2, 3]), (1.0, [ 10, 20, 30]), (2.0, [ 101, 201, 301])])
-                   , ("accelCoeff", [(100.0, [ 0, 0.2])])
-                   , ("pwr", [(100.0, [ 0, 1.0])])])
--}
-params = fromList ([("pwr", [(100.0, [ 0, 1.0])])
-                   , ("accelCoeff", [(100.0, [ 0, 0.2])])])
+--curvePoints = [(0.0,BV 3.0),(50.0,BV 6.0),(100.0,BV 8.0)]
 
-curveHash = fromList ([("pwr", curvePoints)])
+paramHash = fromList ([("pwr", [(0.0,BV 3.0),(50.0,BV 6.0),(100.0,BV 8.0)])
+                      , ("accelCoeff", [(0.0,BV 0.2),(100.0,BV 0.2)])])
 
-curvePoints = [(0.0,BV 3.0),(50.0,BV 6.0),(100.0,BV 8.0)]
 
 chunkTrack :: Integral a => [(a, b)] -> [(b, b)]
 chunkTrack t = let (tEven1,tOdd1) = Data.List.partition (\(i,pm) -> i `mod` 2 == 0) $ Data.List.drop 1 t
@@ -100,6 +80,28 @@ makeFrame params = do
           mapM_ drawTrack tracksChunked
     in
     img
+
+--makeFrame :: Map String (Maybe Double) -> Codec.Picture.Image Codec.Picture.PixelRGBA8
+makeFrame2 paramHash t = do
+  let white = PixelRGBA8 255 255 255 255
+      --drawColor = PixelRGBA8 0 0x86 0xc1 255
+      --vx = fromJust $ fromJust $ Data.Map.lookup "vx" params
+      --vy = fromJust $ fromJust $ Data.Map.lookup "vy" params
+      --r = fromJust $ fromJust $ Data.Map.lookup "r" params
+      (BV accelCoeff) = interpolatedValue linearInterpolate t "accelCoeff" paramHash
+      (BV pwr) = interpolatedValue linearInterpolate t "pwr" paramHash
+
+      pmInits = Data.List.map (\v -> pm { vel = v }) $ Data.List.map (vec2Scale 1) $ radialVectors 60
+      tracks = Data.List.map (\pm -> track (accelerate accelCoeff pwr) (200, pm)) $ pmInits
+      tracksChunked = Data.List.map chunkTrack tracks
+      img = renderDrawing 800 600 white $
+        --withTexture (uniformTexture drawColor) $
+        do          
+          mapM_ drawTrack tracksChunked
+    in
+    img
+
+
 
 
 accelerate :: Double -> Double -> PointMass -> PointMass

@@ -61,7 +61,7 @@ testHint =
       --emptyLine 
       --paramArg <- eval params
       -- say $ show paramArg
-      runStmt "wil <- sequence $ (Lib.writeImageList params \"dyntest\" [0,2.0..8.0])"
+      runStmt "wil <- sequence $ (Lib.writeImageList2 paramHash \"dyntest\" [1.0,2.0..99.0])"
       --say $ show writeImageListFn
       --let rng = "[0,2.0..8.0]"
       emptyLine 
