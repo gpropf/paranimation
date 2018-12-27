@@ -11,7 +11,7 @@ import Data.List
 import Number.Complex
 import Algebra.Transcendental
 import Graphics.Rasterific
-import Lib
+import Paranimate
 
 data PointMass = PointMass { mass :: Double,
                              pos :: Vec2 Double,
@@ -29,8 +29,8 @@ vp :: Viewport
 vp = Viewport { upperLeft = Vec2 (-2) (1.5), scaleFactors = Vec2 200 200}
 
 paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
-paramHash = fromList ([("pwr", [(0.0,BV 3.0),(50.0,BV 6.0),(100.0,BV 8.0)])
-                      , ("accelCoeff", [(0.0,BV 0.2),(100.0,BV 0.2)])])
+paramHash = fromList ([("pwr", [(0.0, BV 2.0),(50.0, BV 6.0),(500.0, BV 7.0)])
+                      , ("accelCoeff", [(0.0,BV 0.2),(500.0,BV 0.2)])])
 
 
 chunkTrack :: Integral a => [(a, b)] -> [(b, b)]
@@ -53,10 +53,10 @@ drawTrack t = do
               stroke 3 JoinRound (CapRound, CapRound) $
               line (viewport2abs vp (pos pmStart)) (viewport2abs vp (pos pmEnd))) t
             
-makeFrame2 :: Data.Map.Map [Char] [(Double, BV Double)]
+makeFrame :: Data.Map.Map [Char] [(Double, BV Double)]
   -> Double
   -> Codec.Picture.Image Codec.Picture.PixelRGBA8
-makeFrame2 paramHash t = do
+makeFrame paramHash t = do
   let white = PixelRGBA8 255 255 255 255
       --drawColor = PixelRGBA8 0 0x86 0xc1 255
       --vx = fromJust $ fromJust $ Data.Map.lookup "vx" params
