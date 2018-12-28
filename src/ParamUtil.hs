@@ -14,7 +14,8 @@ import Data.List
 import Data.Map
 import Data.Maybe
 import Paranimate
-import Params
+--import Params
+import ModuleTemplate
 import Text.Printf
 
 
@@ -23,7 +24,7 @@ makeImageList
   :: Data.Map.Map [Char] [(Double, BV Double)]
      -> [Double]
      -> [Codec.Picture.Image Codec.Picture.PixelRGBA8]
-makeImageList paramHash rangeT = Prelude.map (makeFrame paramHash) rangeT
+makeImageList paramHash rangeT = Prelude.map (ModuleTemplate.makeFrame paramHash) rangeT
 
 
 
