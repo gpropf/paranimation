@@ -43,6 +43,7 @@ extra-deps:
 - either-both-0.1.0.0
 - ghc-8.4.3
 - hint-0.9.0
+- random-1.1
 
 #- complex-generic-0.1.1.1
 #- split

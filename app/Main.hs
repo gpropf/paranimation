@@ -5,11 +5,18 @@ import Data.List
 import Control.Monad
 import Paranimate
 import ParamUtil
---import Params
+import Params
 import ModuleTemplate
+import System.Random
 
 main :: IO [()]
-main = sequence $ (writeImageList ModuleTemplate.paramHash "paranimate" [1,2..400.0])
+main = sequence $ (writeImageList ModuleTemplate.makeFrame ModuleTemplate.paramHash "paranimate" [0,5..400.0])
+
+getRandomNum :: (Random a, Show a, Show g, RandomGen g, Fractional a) => g -> a -> a -> String
+getRandomNum g a b = show $ randomR (a, b) g
+-- FIXME
+
+
 
 
 --main = sequence [rnlm]
