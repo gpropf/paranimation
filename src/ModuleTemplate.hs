@@ -12,7 +12,9 @@ import Number.Complex
 import Algebra.Transcendental
 import Graphics.Rasterific
 import Paranimate
+import System.Random
 
+testVertices = [(-1.0) +: 1, 1 +: 1, 1 +: (-1), (-1) +: (-1)]
 
 vp :: Viewport
 vp = Viewport { upperLeft = Vec2 (-2) (1.5), scaleFactors = Vec2 200 200}
@@ -28,6 +30,13 @@ drawCircle x y =
     withTexture (uniformTexture colr) $
     fill $ circle (viewport2abs vp (Vec2 x y)) 30
 
+pickPoints startP g n vertices pl =
+  if n <= 0 then pl else
+    let (i,g') = randomR (0, length vertices - 1) g
+        d = (0.5 `scale` ((vertices !! i) - startP))
+        newP = startP + d
+    in
+      pickPoints newP g' (n-1) vertices (newP:pl)
     
 makeFrame :: Data.Map.Map [Char] [(Double, BV Double)]
   -> Double
