@@ -38,7 +38,7 @@ params = Params
            <> short 'r'
            <> help "Range of values for independent variable: (start, step, end)"
            <> showDefault
-           <> value (0,1,10)
+           <> value (0,20,400)
            <> metavar "RANGE" )
 
 
@@ -55,13 +55,23 @@ runModule (Params m False rng) =
   do
     putStrLn $ "Using module " ++ m ++ " with range " ++ show rng
     case m of
-      "mt" -> sequence_ $ (writeImageList ModuleTemplate.makeFrame ModuleTemplate.paramHash "mt" [0,20..400.0])
-      "cpwr" -> sequence_ $ (writeImageList Params.makeFrame Params.paramHash "cpwr" [0,20..400.0])
+      "mt" ->
+        let mw = ModuleWorkers ModuleTemplate.paramHash ModuleTemplate.makeFrame
+        in
+          sequenceFrames mw rng "mt"
+--          sequence_ $ (writeImageList (makeFrameFn mw) (pHash mw) "mt" [0,20..400.0])
+--      "cpwr" -> sequence_ $ (writeImageList Params.makeFrame Params.paramHash "cpwr" [0,20..400.0])
+      "cpwr" ->
+        let mw = ModuleWorkers Params.paramHash Params.makeFrame
+        in
+          sequenceFrames mw rng "cpwr"
       _ -> putStrLn $ "Module " ++ m ++ " not found!"
     
 runModule _ = return ()
 
 
+sequenceFrames mw (start,step,end) baseFilename =  
+  sequence_ $ (writeImageList (makeFrameFn mw) (pHash mw) baseFilename [start,start+step..end])
 {-
 main :: IO [()]
 main = sequence $ (writeImageList ModuleTemplate.makeFrame ModuleTemplate.paramHash "paranimate" [0,5..400.0])
