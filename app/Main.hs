@@ -53,25 +53,34 @@ main = runModule =<< execParser opts
 runModule :: Params -> IO ()
 runModule (Params m False rng) =
   do
+    g <- getStdGen
     putStrLn $ "Using module " ++ m ++ " with range " ++ show rng
     case m of
       "mt" ->
         let mw = ModuleWorkers ModuleTemplate.paramHash ModuleTemplate.makeFrame
         in
-          sequenceFrames mw rng "mt"
+          sequenceFrames mw g rng "mt"
 --          sequence_ $ (writeImageList (makeFrameFn mw) (pHash mw) "mt" [0,20..400.0])
 --      "cpwr" -> sequence_ $ (writeImageList Params.makeFrame Params.paramHash "cpwr" [0,20..400.0])
       "cpwr" ->
         let mw = ModuleWorkers Params.paramHash Params.makeFrame
         in
-          sequenceFrames mw rng "cpwr"
+          sequenceFrames mw g rng "cpwr"
       _ -> putStrLn $ "Module " ++ m ++ " not found!"
     
 runModule _ = return ()
 
+makeGs n g gs =
+  if n <= 0 then gs else
+    let (g1, g2) = split g
+    in
+      makeGs (n-1) g2 (g1:gs)
 
-sequenceFrames mw (start,step,end) baseFilename =  
-  sequence_ $ (writeImageList (makeFrameFn mw) (pHash mw) baseFilename [start,start+step..end])
+sequenceFrames mw g (start,step,end) baseFilename =
+  do
+    let rng = [start,start+step..end]
+        gs = makeGs (length rng) g []
+    sequence_ $ (writeImageList (makeFrameFn mw) g (pHash mw) baseFilename rng)
 {-
 main :: IO [()]
 main = sequence $ (writeImageList ModuleTemplate.makeFrame ModuleTemplate.paramHash "paranimate" [0,5..400.0])

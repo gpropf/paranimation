@@ -12,6 +12,7 @@ import Number.Complex
 import Algebra.Transcendental
 import Graphics.Rasterific
 import Paranimate
+import System.Random
 
 data PointMass = PointMass { mass :: Double,
                              pos :: Vec2 Double,
@@ -53,10 +54,10 @@ drawTrack t = do
               stroke 3 JoinRound (CapRound, CapRound) $
               line (viewport2abs vp (pos pmStart)) (viewport2abs vp (pos pmEnd))) t
             
-makeFrame :: Data.Map.Map [Char] [(Double, BV Double)]
+makeFrame :: StdGen -> Data.Map.Map [Char] [(Double, BV Double)]
   -> Double
   -> Codec.Picture.Image Codec.Picture.PixelRGBA8
-makeFrame paramHash t = do
+makeFrame g paramHash t = do
   let white = PixelRGBA8 255 255 255 255
       --drawColor = PixelRGBA8 0 0x86 0xc1 255
       --vx = fromJust $ fromJust $ Data.Map.lookup "vx" params

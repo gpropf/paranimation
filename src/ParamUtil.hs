@@ -24,14 +24,14 @@ makeImageList
   :: Data.Map.Map [Char] [(Double, BV Double)]
      -> [Double]
      -> [Codec.Picture.Image Codec.Picture.PixelRGBA8] -}
-makeImageList makeFrameFn paramHash rangeT = Prelude.map (makeFrameFn paramHash) rangeT
+makeImageList makeFrameFn g paramHash rangeT = Prelude.map (makeFrameFn g paramHash) rangeT
 
 
 {-
 writeImageList
   :: Data.Map.Map [Char] [(Double, BV Double)]
      -> [Char] -> [Double] -> [IO ()] -}
-writeImageList makeFrameFn paramHash baseFilename rangeT =
+writeImageList makeFrameFn g paramHash baseFilename rangeT =
   let lenRangeT = length rangeT
       numZeros = length (show lenRangeT)
       imageIndexes = [0..lenRangeT]
@@ -39,5 +39,5 @@ writeImageList makeFrameFn paramHash baseFilename rangeT =
       fmt x = printf fmtString x
       --makeFrameFn = ModuleTemplate.makeFrame
   in
-    zipWith (\fname image -> Codec.Picture.writePng fname image) (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes) (makeImageList makeFrameFn paramHash rangeT)
+    zipWith (\fname image -> Codec.Picture.writePng fname image) (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes) (makeImageList makeFrameFn g paramHash rangeT)
 
