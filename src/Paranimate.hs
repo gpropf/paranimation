@@ -40,7 +40,7 @@ data Vec2 a = Vec2 { x :: a, y :: a } deriving (Show)
 data Viewport = Viewport { upperLeft :: Vec2 Double, scaleFactors :: Vec2 Double} deriving (Show)
 
 data ModuleWorkers = ModuleWorkers { pHash :: Data.Map.Map [Char] [(Double, BV Double)],
-                                     makeFrameFn :: StdGen -> Data.Map.Map [Char] [(Double, BV Double)] -> Double -> Codec.Picture.Image Codec.Picture.PixelRGBA8
+                                     makeFrameFn :: Data.Map.Map [Char] [(Double, BV Double)] -> StdGen -> Double -> Codec.Picture.Image Codec.Picture.PixelRGBA8
                                    }
 
 (|+) :: Num a => Vec2 a -> Vec2 a -> Vec2 a

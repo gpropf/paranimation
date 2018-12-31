@@ -53,11 +53,11 @@ drawTrack t = do
               withTexture (uniformTexture colr) $
               stroke 3 JoinRound (CapRound, CapRound) $
               line (viewport2abs vp (pos pmStart)) (viewport2abs vp (pos pmEnd))) t
-            
-makeFrame :: StdGen -> Data.Map.Map [Char] [(Double, BV Double)]
-  -> Double
+           
+makeFrame :: Data.Map.Map [Char] [(Double, BV Double)]
+  -> StdGen -> Double
   -> Codec.Picture.Image Codec.Picture.PixelRGBA8
-makeFrame g paramHash t = do
+makeFrame paramHash g t = do
   let white = PixelRGBA8 255 255 255 255
       --drawColor = PixelRGBA8 0 0x86 0xc1 255
       --vx = fromJust $ fromJust $ Data.Map.lookup "vx" params

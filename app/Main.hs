@@ -80,7 +80,7 @@ sequenceFrames mw g (start,step,end) baseFilename =
   do
     let rng = [start,start+step..end]
         gs = makeGs (length rng) g []
-    sequence_ $ (writeImageList (makeFrameFn mw) g (pHash mw) baseFilename rng)
+    sequence_ $ (writeImageList (makeFrameFn mw) (pHash mw) baseFilename gs rng)
 {-
 main :: IO [()]
 main = sequence $ (writeImageList ModuleTemplate.makeFrame ModuleTemplate.paramHash "paranimate" [0,5..400.0])
