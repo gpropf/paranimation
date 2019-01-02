@@ -18,11 +18,6 @@ import Algebra.Ring( C )
 
 numPoints = 50000
 
--- testVertices = [(-1.0) +: 1, 1 +: 1, 1 +: (-1), (-1) +: (-1)]
-
---vp :: Viewport
---vp = Viewport { upperLeft = Vec2 (-4) (3), scaleFactors = Vec2 150 150}
-
 paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
 paramHash = fromList ([("x", [(0.0, BV (-1.5)),(50.0, BV 1.5),(500.0, BV 1.2)])
                       , ("y", [(0.0, BV 0.2),(500.0,BV 0.9)])
@@ -36,8 +31,8 @@ paramHash = fromList ([("x", [(0.0, BV (-1.5)),(50.0, BV 1.5),(500.0, BV 1.2)])
                       , ("t21", [(0.0, BVC ((-2) +: (-1))),(500.0, BVC ((4) +: (5)))])
                       , ("t22", [(0.0, BVC ((0.75) +: (-2.75))),(500.0, BVC ((4.75) +: (1.25)))])
                       , ("t23", [(0.0, BVC ((-3) +: (-3))),(500.0, BVC ((1) +: (1)))])
-                      , ("vpul", [(0.0, BVC ((-4.0) +: (3.0))),(500.0, BVC ((0.0) +: (0.0)))])
-                      , ("sf", [(0.0, BVC ((150.0) +: (150.0))),(500.0, BVC ((900.0) +: (900.0)))])])
+                      , ("vpul", [(0.0, BVC ((-4.0) +: (3.0))),(250.0, BVC ((2.0) +: (1.0))),(500.0, BVC ((-4.0) +: (3.0)))])
+                      , ("sf", [(0.0, BVC ((150.0) +: (150.0))),(250.0, BVC ((900.0) +: (900.0))),(500.0, BVC ((150.0) +: (150.0)))])])
             
 
 drawCircle vp x y =
@@ -52,10 +47,10 @@ drawCircleCmplx vp c =
      -- ageClr = round $ ((fromInteger (numPoints-n)/numPoints) * 255)
 --      colr = PixelRGBA8 ageClr 150 0 100
       colr = PixelRGBA8 77 150 0 70
+      circleR = (x $ (scaleFactors vp)) / 75.0
   in
     withTexture (uniformTexture colr) $
-    fill $ circle (viewport2abs vp (Vec2 (real p) (imag p))) 2.0
-
+    fill $ circle (viewport2abs vp (Vec2 (real p) (imag p))) (realToFrac circleR)
 
 {-pickPoints :: (Ord t1, RandomGen t2, Algebra.Ring.C a, Floating a, Num t1,
       Eq a) =>  T a -> t2 -> t1 -> [T a] -> [T a] -> [T a] -}

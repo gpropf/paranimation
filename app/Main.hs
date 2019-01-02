@@ -33,7 +33,7 @@ params = Params
            <> short 'r'
            <> help "Range of values for independent variable: (start, step, end)"
            <> showDefault
-           <> value (0,20,400)
+           <> value (0,20,499)
            <> metavar "RANGE" )
 
 

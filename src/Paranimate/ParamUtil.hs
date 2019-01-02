@@ -15,27 +15,31 @@ import Data.Map
 import Data.Maybe
 import Paranimate.Paranimate
 import Text.Printf
+import System.Random
 
 
-{-
 makeImageList
-  :: Data.Map.Map [Char] [(Double, BV Double)]
-     -> [Double]
-     -> [Codec.Picture.Image Codec.Picture.PixelRGBA8] -}
-makeImageList makeFrameFn paramHash gs rangeT = Prelude.zipWith (makeFrameFn paramHash) gs rangeT
+  :: (Map [Char] [(Double, BV Double)] -> StdGen -> Double -> Image PixelRGBA8)
+  -> Data.Map.Map [Char] [(Double, BV Double)]
+  -> [StdGen] -> [Double]
+  -> [Codec.Picture.Image Codec.Picture.PixelRGBA8]
+makeImageList makeFrameFn paramHash gs rangeT
+  = Prelude.zipWith (makeFrameFn paramHash) gs rangeT
 
 
-{-
 writeImageList
-  :: Data.Map.Map [Char] [(Double, BV Double)]
-     -> [Char] -> [Double] -> [IO ()] -}
+  :: (Map [Char] [(Double, BV Double)] -> StdGen -> Double -> Image PixelRGBA8)
+  -> Map [Char] [(Double, BV Double)]
+  -> [Char] -> [StdGen] -> [Double] -> [IO ()]
 writeImageList makeFrameFn paramHash baseFilename gs rangeT =
   let lenRangeT = length rangeT
       numZeros = length (show lenRangeT)
       imageIndexes = [0..lenRangeT]
       fmtString = "%0" ++ show numZeros ++ "d"
       fmt x = printf fmtString x
-      --makeFrameFn = ModuleTemplate.makeFrame
   in
-    zipWith (\fname image -> Codec.Picture.writePng fname image) (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes) (makeImageList makeFrameFn paramHash gs rangeT)
+    zipWith
+    (\fname image -> Codec.Picture.writePng fname image)
+    (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes)
+    (makeImageList makeFrameFn paramHash gs rangeT)
 
