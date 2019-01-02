@@ -16,12 +16,12 @@ import System.Random
 import Number.Complex
 import Algebra.Ring( C )
 
-numPoints = 150000
+numPoints = 50000
 
 -- testVertices = [(-1.0) +: 1, 1 +: 1, 1 +: (-1), (-1) +: (-1)]
 
-vp :: Viewport
-vp = Viewport { upperLeft = Vec2 (-4) (3), scaleFactors = Vec2 150 150}
+--vp :: Viewport
+--vp = Viewport { upperLeft = Vec2 (-4) (3), scaleFactors = Vec2 150 150}
 
 paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
 paramHash = fromList ([("x", [(0.0, BV (-1.5)),(50.0, BV 1.5),(500.0, BV 1.2)])
@@ -35,16 +35,19 @@ paramHash = fromList ([("x", [(0.0, BV (-1.5)),(50.0, BV 1.5),(500.0, BV 1.2)])
                       , ("t13", [(0.0, BVC ((2.5) +: (1.25))),(500.0, BVC ((-1.5) +: (-2.75)))])
                       , ("t21", [(0.0, BVC ((-2) +: (-1))),(500.0, BVC ((4) +: (5)))])
                       , ("t22", [(0.0, BVC ((0.75) +: (-2.75))),(500.0, BVC ((4.75) +: (1.25)))])
-                      , ("t23", [(0.0, BVC ((-3) +: (-3))),(500.0, BVC ((1) +: (1)))])])
+                      , ("t23", [(0.0, BVC ((-3) +: (-3))),(500.0, BVC ((1) +: (1)))])
+                      , ("vpul", [(0.0, BVC ((-4.0) +: (3.0))),(500.0, BVC ((0.0) +: (0.0)))])
+                      , ("sf", [(0.0, BVC ((150.0) +: (150.0))),(500.0, BVC ((900.0) +: (900.0)))])])
+            
 
-drawCircle x y =
+drawCircle vp x y =
   let colr = PixelRGBA8 255 0 0 255
   in
     withTexture (uniformTexture colr) $
     fill $ circle (viewport2abs vp (Vec2 x y)) 30
 
 
-drawCircleCmplx c =
+drawCircleCmplx vp c =
   let (n,p) = c
      -- ageClr = round $ ((fromInteger (numPoints-n)/numPoints) * 255)
 --      colr = PixelRGBA8 ageClr 150 0 100
@@ -88,6 +91,8 @@ makeFrame paramHash g t = do
       (BVC t21) = interpolatedValue linearInterpolate t "t21" paramHash
       (BVC t22) = interpolatedValue linearInterpolate t "t22" paramHash
       (BVC t23) = interpolatedValue linearInterpolate t "t23" paramHash
+      (BVC vpul) = interpolatedValue linearInterpolate t "vpul" paramHash
+      (BVC sf) = interpolatedValue linearInterpolate t "sf" paramHash
 
       --newUR = ur + ul
       img = renderDrawing 1200 900 white $
@@ -95,11 +100,12 @@ makeFrame paramHash g t = do
           --return ()
 --          let vertices = [ul,ll,ur,lr]
           let vertices = [t11,t12,t13,t21,t22,t23]
+              vp = Viewport { upperLeft = vec2fromComplex vpul, scaleFactors = vec2fromComplex sf}
               --sp = (0.0 :: Double) +: (0.0 :: Double)
               sp = t11
               ps = pickPoints sp g numPoints vertices 0 []
 --          mapM_ drawCircleCmplx (reverse ps)
-          mapM_ drawCircleCmplx ps
+          mapM_ (drawCircleCmplx vp) ps
           --drawCircle x y
           --drawCircle (real ul) (imag ul)
     in
