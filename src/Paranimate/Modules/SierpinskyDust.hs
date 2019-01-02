@@ -1,4 +1,4 @@
-module ModuleTemplate where
+module Paranimate.Modules.SierpinskyDust where
 
 import Prelude hiding (lookup)
 import Codec.Picture( Image, PixelRGBA8( .. ), writePng )
@@ -11,7 +11,7 @@ import Data.List
 import Number.Complex
 import Algebra.Transcendental
 import Graphics.Rasterific
-import Paranimate
+import Paranimate.Paranimate
 import System.Random
 import Number.Complex
 import Algebra.Ring( C )

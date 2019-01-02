@@ -1,4 +1,4 @@
-module Paranimate where
+module Paranimate.Paranimate where
 
 import Prelude hiding (lookup)
 import Codec.Picture( Image, PixelRGBA8( .. ), writePng )

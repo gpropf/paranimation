@@ -2,7 +2,7 @@
 
 
 
-module ParamUtil where
+module Paranimate.ParamUtil where
 
 import Codec.Picture( Image, PixelRGBA8( .. ), writePng )
 import Graphics.Rasterific
@@ -13,9 +13,7 @@ import Algebra.Ring( C )
 import Data.List
 import Data.Map
 import Data.Maybe
-import Paranimate
---import Params
-import ModuleTemplate
+import Paranimate.Paranimate
 import Text.Printf
 
 

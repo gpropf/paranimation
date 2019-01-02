@@ -1,4 +1,4 @@
-module Params where
+module Paranimate.Modules.Params where
 
 import Prelude hiding (lookup)
 import Codec.Picture( Image, PixelRGBA8( .. ), writePng )
@@ -11,7 +11,7 @@ import Data.List
 import Number.Complex
 import Algebra.Transcendental
 import Graphics.Rasterific
-import Paranimate
+import Paranimate.Paranimate
 import System.Random
 
 data PointMass = PointMass { mass :: Double,

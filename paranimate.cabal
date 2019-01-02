@@ -41,7 +41,10 @@ library
               , random
               , hint                
   exposed-modules:
-      Paranimate, ParamUtil, Params, ModuleTemplate
+                  Paranimate.Paranimate
+                , Paranimate.ParamUtil
+                , Paranimate.Modules.Params
+                , Paranimate.Modules.SierpinskyDust
   other-modules:
       Paths_paranimate
   default-language: Haskell2010
