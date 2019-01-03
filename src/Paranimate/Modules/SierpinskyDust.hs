@@ -16,23 +16,24 @@ import System.Random
 import Number.Complex
 import Algebra.Ring( C )
 
-numPoints = 50000
+numPoints = 10000
 
 paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
-paramHash = fromList ([("x", [(0.0, BV (-1.5)),(50.0, BV 1.5),(500.0, BV 1.2)])
-                      , ("y", [(0.0, BV 0.2),(500.0,BV 0.9)])
-                      , ("ul", [(0.0, BVC ((-0.2) +: 1)),(500.0, BVC ((-3.0) +: 2.0))])
-                      , ("ll", [(0.0, BVC ((-0.2) +: (-1))),(500.0, BVC ((-5.0) +: (-2.0)))])
-                      , ("ur", [(0.0, BVC ((0.2) +: 1)),(500.0, BVC ((4.0) +: 4.0))])
-                      , ("lr", [(0.0, BVC ((0.2) +: (-1))),(500.0,BVC ((3.0) +: (-2.0)))])
-                      , ("t11", [(0.0, BVC ((-0.75) +: (0.5))),(500.0, BVC ((-4.75) +: (-3.5)))])
-                      , ("t12", [(0.0, BVC ((2) +: (2.5))),(500.0, BVC ((-2) +: (-1.5)))])
-                      , ("t13", [(0.0, BVC ((2.5) +: (1.25))),(500.0, BVC ((-1.5) +: (-2.75)))])
-                      , ("t21", [(0.0, BVC ((-2) +: (-1))),(500.0, BVC ((4) +: (5)))])
-                      , ("t22", [(0.0, BVC ((0.75) +: (-2.75))),(500.0, BVC ((4.75) +: (1.25)))])
-                      , ("t23", [(0.0, BVC ((-3) +: (-3))),(500.0, BVC ((1) +: (1)))])
-                      , ("vpul", [(0.0, BVC ((-4.0) +: (3.0))),(250.0, BVC ((2.0) +: (1.0))),(500.0, BVC ((-4.0) +: (3.0)))])
-                      , ("sf", [(0.0, BVC ((150.0) +: (150.0))),(250.0, BVC ((900.0) +: (900.0))),(500.0, BVC ((150.0) +: (150.0)))])])
+paramHash =
+  fromList ([("x", [(0.0, BV (-1.5)),(50.0, BV 1.5),(500.0, BV 1.2)])
+            , ("y", [(0.0, BV 0.2),(500.0,BV 0.9)])
+            , ("ul", [(0.0, BVC ((-0.2) +: 1)),(500.0, BVC ((-3.0) +: 2.0))])
+            , ("ll", [(0.0, BVC ((-0.2) +: (-1))),(500.0, BVC ((-5.0) +: (-2.0)))])
+            , ("ur", [(0.0, BVC ((0.2) +: 1)),(500.0, BVC ((4.0) +: 4.0))])
+            , ("lr", [(0.0, BVC ((0.2) +: (-1))),(500.0,BVC ((3.0) +: (-2.0)))])
+            , ("t11", [(0.0, BVC ((-0.75) +: (0.5))),(500.0, BVC ((-4.75) +: (-3.5)))])
+            , ("t12", [(0.0, BVC ((2) +: (2.5))),(500.0, BVC ((-2) +: (-1.5)))])
+            , ("t13", [(0.0, BVC ((2.5) +: (1.25))),(500.0, BVC ((-1.5) +: (-2.75)))])
+            , ("t21", [(0.0, BVC ((-2) +: (-1))),(500.0, BVC ((4) +: (5)))])
+            , ("t22", [(0.0, BVC ((0.75) +: (-2.75))),(500.0, BVC ((4.75) +: (1.25)))])
+            , ("t23", [(0.0, BVC ((-3) +: (-3))),(500.0, BVC ((1) +: (1)))])
+            , ("vpul", [(0.0, BVC ((-4.0) +: (3.0))),(500.0, BVC ((-4.0) +: (3.0)))])
+            , ("sf", [(0.0, BVC ((150.0) +: (150.0))),(500.0, BVC ((150.0) +: (150.0)))])])
             
 
 drawCircle vp x y =
@@ -44,9 +45,9 @@ drawCircle vp x y =
 
 drawCircleCmplx vp c =
   let (n,p) = c
-     -- ageClr = round $ ((fromInteger (numPoints-n)/numPoints) * 255)
---      colr = PixelRGBA8 ageClr 150 0 100
-      colr = PixelRGBA8 77 150 0 70
+      ageClr = round $ ((fromInteger numPoints)-(fromInteger n))/(fromInteger numPoints) * 255
+      colr = PixelRGBA8 ageClr 150 0 70
+      --colr = PixelRGBA8 77 150 0 70
       circleR = (x $ (scaleFactors vp)) / 75.0
   in
     withTexture (uniformTexture colr) $
@@ -103,6 +104,5 @@ makeFrame paramHash g t = do
           mapM_ (drawCircleCmplx vp) ps
           --drawCircle x y
           --drawCircle (real ul) (imag ul)
-    in
-    img
+  img
 
