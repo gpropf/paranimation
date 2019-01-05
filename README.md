@@ -106,4 +106,25 @@ So to sum up, there are 3 steps to creating your own animation module.
 
 * Tests - we don't have any...
 
-
+* Monadification?? While working on this I kept thinking that the main
+  data type `IV` ("Interpolated Value") should be implemented using
+  Monads or Arrows or something. The idea is sort of that each list of
+  keyvalues is really just one value that changes over time in some
+  (perhaps complex) way. Then you can sort of feed an independent
+  value (what I call 't' above) in and you get the correct
+  interpolated value out. I'm pretty sure the State Monad would offer
+  a way to do this. In that case my `linearInterpolate` function just
+  becomes some kind of fancy parametric `get` function then. This
+  needs more thought though.
+  
+* Command line arguments. We need to support a lot more options at the
+  command line. Things like the base filename for the frames, the
+  directory to put them in, how verbose to be, etc... need to be
+  options. Adding new arguments is easy with optparse-applicative so I
+  need to put some more in.
+  
+* Parallelization. Making this kind of animation is inherently
+  parallelizable. This is currently not exploited though. I'm using
+  `sequence` to make the frames but there's really nothing sequential
+  about them. We could have a CPU core or separate networked computer
+  do each frame.

@@ -17,43 +17,43 @@ import Number.Complex
 import Algebra.Ring( C )
 
 
-paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
+paramHash :: Data.Map.Map [Char] [(Double, IV Double)]
 paramHash =
-  fromList ([("x", [(0.0, BV (-1.5)),(50.0, BV 1.5),(500.0, BV 1.2)])
-            , ("y", [(0.0, BV 0.2),(500.0,BV 0.9)])
-            , ("ul", [(0.0, BVC ((-0.2) +: 1)),(500.0, BVC ((-3.0) +: 2.0))])
-            , ("ll", [(0.0, BVC ((-0.2) +: (-1))),(500.0, BVC ((-5.0) +: (-2.0)))])
-            , ("ur", [(0.0, BVC ((0.2) +: 1)),(500.0, BVC ((4.0) +: 4.0))])
-            , ("lr", [(0.0, BVC ((0.2) +: (-1))),(500.0,BVC ((3.0) +: (-2.0)))])
-            , ("t11", [(0.0, BVC ((-0.75) +: (0.5))),(500.0, BVC ((-4.75) +: (-3.5)))])
-            , ("t12", [(0.0, BVC ((2) +: (2.5))),(500.0, BVC ((-2) +: (-1.5)))])
-            , ("t13", [(0.0, BVC ((2.5) +: (1.25))),(500.0, BVC ((-1.5) +: (-2.75)))])
-            , ("t21", [(0.0, BVC ((-2) +: (-1))),(500.0, BVC ((4) +: (5)))])
-            , ("t22", [(0.0, BVC ((0.75) +: (-2.75))),(500.0, BVC ((4.75) +: (1.25)))])
-            , ("t23", [(0.0, BVC ((-3) +: (-3))),(500.0, BVC ((1) +: (1)))])
-            , ("vpul", [(0.0, BVC ((-4.0) +: (3.0))),(500.0, BVC ((-4.0) +: (3.0)))])
-            , ("sf", [(0.0, BVC ((150.0) +: (150.0))),(500.0, BVC ((150.0) +: (150.0)))])])
+  fromList ([("x", [(0.0, IV (-1.5)),(50.0, IV 1.5),(500.0, IV 1.2)])
+            , ("y", [(0.0, IV 0.2),(500.0,IV 0.9)])
+            , ("ul", [(0.0, IVC ((-0.2) +: 1)),(500.0, IVC ((-3.0) +: 2.0))])
+            , ("ll", [(0.0, IVC ((-0.2) +: (-1))),(500.0, IVC ((-5.0) +: (-2.0)))])
+            , ("ur", [(0.0, IVC ((0.2) +: 1)),(500.0, IVC ((4.0) +: 4.0))])
+            , ("lr", [(0.0, IVC ((0.2) +: (-1))),(500.0,IVC ((3.0) +: (-2.0)))])
+            , ("t11", [(0.0, IVC ((-0.75) +: (0.5))),(500.0, IVC ((-4.75) +: (-3.5)))])
+            , ("t12", [(0.0, IVC ((2) +: (2.5))),(500.0, IVC ((-2) +: (-1.5)))])
+            , ("t13", [(0.0, IVC ((2.5) +: (1.25))),(500.0, IVC ((-1.5) +: (-2.75)))])
+            , ("t21", [(0.0, IVC ((-2) +: (-1))),(500.0, IVC ((4) +: (5)))])
+            , ("t22", [(0.0, IVC ((0.75) +: (-2.75))),(500.0, IVC ((4.75) +: (1.25)))])
+            , ("t23", [(0.0, IVC ((-3) +: (-3))),(500.0, IVC ((1) +: (1)))])
+            , ("vpul", [(0.0, IVC ((-4.0) +: (3.0))),(500.0, IVC ((-4.0) +: (3.0)))])
+            , ("sf", [(0.0, IVC ((150.0) +: (150.0))),(500.0, IVC ((150.0) +: (150.0)))])])
             
     
-makeFrame :: Data.Map.Map [Char] [(Double, BV Double)]
+makeFrame :: Data.Map.Map [Char] [(Double, IV Double)]
   -> StdGen -> Double
   -> Codec.Picture.Image Codec.Picture.PixelRGBA8
 makeFrame paramHash g t = do
   let white = PixelRGBA8 10 50 210 255     
-      (BV x) = interpolatedValue linearInterpolate t "x" paramHash
-      (BV y) = interpolatedValue linearInterpolate t "y" paramHash
-      (BVC ul) = interpolatedValue linearInterpolate t "ul" paramHash
-      (BVC ll) = interpolatedValue linearInterpolate t "ll" paramHash
-      (BVC ur) = interpolatedValue linearInterpolate t "ur" paramHash
-      (BVC lr) = interpolatedValue linearInterpolate t "lr" paramHash
-      (BVC t11) = interpolatedValue linearInterpolate t "t11" paramHash
-      (BVC t12) = interpolatedValue linearInterpolate t "t12" paramHash
-      (BVC t13) = interpolatedValue linearInterpolate t "t13" paramHash
-      (BVC t21) = interpolatedValue linearInterpolate t "t21" paramHash
-      (BVC t22) = interpolatedValue linearInterpolate t "t22" paramHash
-      (BVC t23) = interpolatedValue linearInterpolate t "t23" paramHash
-      (BVC vpul) = interpolatedValue linearInterpolate t "vpul" paramHash
-      (BVC sf) = interpolatedValue linearInterpolate t "sf" paramHash
+      (IV x) = interpolatedValue linearInterpolate t "x" paramHash
+      (IV y) = interpolatedValue linearInterpolate t "y" paramHash
+      (IVC ul) = interpolatedValue linearInterpolate t "ul" paramHash
+      (IVC ll) = interpolatedValue linearInterpolate t "ll" paramHash
+      (IVC ur) = interpolatedValue linearInterpolate t "ur" paramHash
+      (IVC lr) = interpolatedValue linearInterpolate t "lr" paramHash
+      (IVC t11) = interpolatedValue linearInterpolate t "t11" paramHash
+      (IVC t12) = interpolatedValue linearInterpolate t "t12" paramHash
+      (IVC t13) = interpolatedValue linearInterpolate t "t13" paramHash
+      (IVC t21) = interpolatedValue linearInterpolate t "t21" paramHash
+      (IVC t22) = interpolatedValue linearInterpolate t "t22" paramHash
+      (IVC t23) = interpolatedValue linearInterpolate t "t23" paramHash
+      (IVC vpul) = interpolatedValue linearInterpolate t "vpul" paramHash
+      (IVC sf) = interpolatedValue linearInterpolate t "sf" paramHash
 
       img = renderDrawing 1200 900 white $
         do          

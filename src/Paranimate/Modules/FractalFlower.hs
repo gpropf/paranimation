@@ -14,19 +14,19 @@ import Graphics.Rasterific
 import Paranimate.Paranimate
 import System.Random
 
-paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
-paramHash = fromList ([("pwr", [(0.0, BV 2.0),(50.0, BV 6.0),(500.0, BV 7.0)])
-                      , ("accelCoeff", [(0.0,BV 0.2),(500.0,BV 0.2)])])
+paramHash :: Data.Map.Map [Char] [(Double, IV Double)]
+paramHash = fromList ([("pwr", [(0.0, IV 2.0),(50.0, IV 6.0),(500.0, IV 7.0)])
+                      , ("accelCoeff", [(0.0,IV 0.2),(500.0,IV 0.2)])])
 
 
            
-makeFrame :: Data.Map.Map [Char] [(Double, BV Double)]
+makeFrame :: Data.Map.Map [Char] [(Double, IV Double)]
   -> StdGen -> Double
   -> Codec.Picture.Image Codec.Picture.PixelRGBA8
 makeFrame paramHash g t = do
   let white = PixelRGBA8 255 255 255 255
-      (BV accelCoeff) = interpolatedValue linearInterpolate t "accelCoeff" paramHash
-      (BV pwr) = interpolatedValue linearInterpolate t "pwr" paramHash
+      (IV accelCoeff) = interpolatedValue linearInterpolate t "accelCoeff" paramHash
+      (IV pwr) = interpolatedValue linearInterpolate t "pwr" paramHash
 
       pmInits = Data.List.map (\v -> pm { vel = v }) $ Data.List.map (vec2Scale 1) $ radialVectors 60
       tracks = Data.List.map (\pm -> track (accelerate accelCoeff pwr) (200, pm)) $ pmInits

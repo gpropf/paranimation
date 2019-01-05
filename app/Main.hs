@@ -69,6 +69,9 @@ makeGs n g gs =
     in
       makeGs (n-1) g2 (g1:gs)
 
+
+sequenceFrames
+  :: ModuleWorkers -> StdGen -> (Double, Double, Double) -> [Char] -> IO ()
 sequenceFrames mw g (start,step,end) baseFilename =
   do
     let rng = [start,start+step..end]

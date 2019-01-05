@@ -15,25 +15,25 @@ import Text.Printf
 import System.Random
 
 
-data BV a =
-  BV a
-  | BVC (Number.Complex.T a)
-  | BVI Int
+data IV a =
+  IV a
+  | IVC (Number.Complex.T a)
+  | IVI Int
   deriving (Show)
 
-BV x `nplus` BV y = BV (x+y)
-BV x `nplus` BVI y = BVI $ round (x + (fromIntegral y))
-BVI x `nplus` BVI y = BVI (x+y)
-BVC x `nplus` BVC y = BVC $ (real x + real y) +: (imag x + imag y)
+IV x `ivplus` IV y = IV (x+y)
+IV x `ivplus` IVI y = IVI $ round (x + (fromIntegral y))
+IVI x `ivplus` IVI y = IVI (x+y)
+IVC x `ivplus` IVC y = IVC $ (real x + real y) +: (imag x + imag y)
 
-BV x `nminus` BV y = BV (x-y)
-BVI x `nminus` BVI y = BVI (x-y)
-BVI x `nminus` BV y = BVI (round $ (fromIntegral x) - y)
-BVC x `nminus` BVC y = BVC $ (real x - real y) +: (imag x - imag y)
+IV x `ivminus` IV y = IV (x-y)
+IVI x `ivminus` IVI y = IVI (x-y)
+IVI x `ivminus` IV y = IVI (round $ (fromIntegral x) - y)
+IVC x `ivminus` IVC y = IVC $ (real x - real y) +: (imag x - imag y)
 
-BV x `mulByScalar` s = BV (x * s)
-BVI x `mulByScalar` s = BV ((fromIntegral x) * s)
-BVC x `mulByScalar` s = BVC (scale s x)
+IV x `ivscale` s = IV (x * s)
+IVI x `ivscale` s = IV ((fromIntegral x) * s)
+IVC x `ivscale` s = IVC (scale s x)
 
 {- -}
 data Vec2 a = Vec2 { x :: a, y :: a } deriving (Show)
@@ -47,8 +47,8 @@ data Viewport = Viewport { upperLeft :: Vec2 Double, scaleFactors :: Vec2 Double
  essentially define the core of a module. Passing this structure
  allows a single argument to be used in running a module. -}
 
-data ModuleWorkers = ModuleWorkers { pHash :: Data.Map.Map [Char] [(Double, BV Double)],
-                                     makeFrameFn :: Data.Map.Map [Char] [(Double, BV Double)] -> StdGen -> Double -> Codec.Picture.Image Codec.Picture.PixelRGBA8
+data ModuleWorkers = ModuleWorkers { pHash :: Data.Map.Map [Char] [(Double, IV Double)],
+                                     makeFrameFn :: Data.Map.Map [Char] [(Double, IV Double)] -> StdGen -> Double -> Codec.Picture.Image Codec.Picture.PixelRGBA8
                                    }
 
 (|+) :: Num a => Vec2 a -> Vec2 a -> Vec2 a
@@ -86,13 +86,13 @@ vec2fromComplex :: Number.Complex.T a -> Vec2 a
 vec2fromComplex c = Vec2 (real c) (imag c)
 
 {- -}
-linearInterpolate :: (RealFrac a, Fractional a, Algebra.Ring.C a) => (a, BV a) -> (a, BV a) -> a -> BV a
+linearInterpolate :: (RealFrac a, Fractional a, Algebra.Ring.C a) => (a, IV a) -> (a, IV a) -> a -> IV a
 linearInterpolate (t1, v1) (t2, v2) t =
-  let rise = v1 `nminus` v2
+  let rise = v1 `ivminus` v2
       run = t1 - t2
-      m = rise `mulByScalar` (1/run)
-      b = v1 `nminus` (m `mulByScalar` t1)
-      boxedVal = ((m `mulByScalar` t) `nplus` b)
+      m = rise `ivscale` (1/run)
+      b = v1 `ivminus` (m `ivscale` t1)
+      boxedVal = ((m `ivscale` t) `ivplus` b)
   in
     boxedVal
 
@@ -118,8 +118,8 @@ valueOnCurve interpFn curvePoints t =
 
 
 makeImageList
-  :: (Map [Char] [(Double, BV Double)] -> StdGen -> Double -> Image PixelRGBA8)
-  -> Data.Map.Map [Char] [(Double, BV Double)]
+  :: (Map [Char] [(Double, IV Double)] -> StdGen -> Double -> Image PixelRGBA8)
+  -> Data.Map.Map [Char] [(Double, IV Double)]
   -> [StdGen] -> [Double]
   -> [Codec.Picture.Image Codec.Picture.PixelRGBA8]
 makeImageList makeFrameFn paramHash gs rangeT
@@ -127,8 +127,8 @@ makeImageList makeFrameFn paramHash gs rangeT
 
 
 writeImageList
-  :: (Map [Char] [(Double, BV Double)] -> StdGen -> Double -> Image PixelRGBA8)
-  -> Map [Char] [(Double, BV Double)]
+  :: (Map [Char] [(Double, IV Double)] -> StdGen -> Double -> Image PixelRGBA8)
+  -> Map [Char] [(Double, IV Double)]
   -> [Char] -> [StdGen] -> [Double] -> [IO ()]
 writeImageList makeFrameFn paramHash baseFilename gs rangeT =
   let lenRangeT = length rangeT
