@@ -42,7 +42,7 @@ library
               , hint                
   exposed-modules:
                   Paranimate.Paranimate
-                , Paranimate.ParamUtil
+  --              , Paranimate.ParamUtil
                 , Paranimate.Modules.FractalFlower
                 , Paranimate.Modules.SierpinskyDust
   other-modules:

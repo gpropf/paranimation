@@ -4,7 +4,7 @@ import Data.List
 
 import Control.Monad
 import Paranimate.Paranimate
-import Paranimate.ParamUtil
+-- import Paranimate.ParamUtil
 import Paranimate.Modules.FractalFlower as FF
 import Paranimate.Modules.SierpinskyDust as SD
 import System.Random

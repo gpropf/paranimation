@@ -70,7 +70,7 @@ makeFrame paramHash g t = do
 {- Module specific functions below. This is where we put graphics
  "workhorse" functions, global variables, and types for example. -}
 
-numPoints = 250000
+numPoints = 25000
 
 drawCircleCmplx vp c =
   let (n,p) = c

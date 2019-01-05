@@ -117,28 +117,28 @@ valueOnCurve interpFn curvePoints t =
 
 
 
+makeImageList
+  :: (Map [Char] [(Double, BV Double)] -> StdGen -> Double -> Image PixelRGBA8)
+  -> Data.Map.Map [Char] [(Double, BV Double)]
+  -> [StdGen] -> [Double]
+  -> [Codec.Picture.Image Codec.Picture.PixelRGBA8]
+makeImageList makeFrameFn paramHash gs rangeT
+  = Prelude.zipWith (makeFrameFn paramHash) gs rangeT
 
-{-  
 
-i3 = 3 :: Int
-i5 = 5 :: Int
-i4 = 4 :: Int
-i7 = 7 :: Int
+writeImageList
+  :: (Map [Char] [(Double, BV Double)] -> StdGen -> Double -> Image PixelRGBA8)
+  -> Map [Char] [(Double, BV Double)]
+  -> [Char] -> [StdGen] -> [Double] -> [IO ()]
+writeImageList makeFrameFn paramHash baseFilename gs rangeT =
+  let lenRangeT = length rangeT
+      numZeros = length (show lenRangeT)
+      imageIndexes = [0..lenRangeT]
+      fmtString = "%0" ++ show numZeros ++ "d"
+      fmt x = printf fmtString x
+  in
+    zipWith
+    (\fname image -> Codec.Picture.writePng fname image)
+    (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes)
+    (makeImageList makeFrameFn paramHash gs rangeT)
 
-f3 = 3 :: Float
-f6 = 6 :: Float 
-
-t1 = 1.0
-t2 = 5.0
-
-v1 = Vec2 1 0
-v2 = Vec2 0 1
-
-c1 = 4 +: 0
-c2 = 0 +: 4
-
-pFloat = linearInterpolate (t1, BV f3) (t2, BV f6) 4.0
-pCmplx = linearInterpolate (t1, BVC c1) (t2, BVC c2) 3.0
-pInt = linearInterpolate (t1, BVI i3) (t2, BVI i7) 3.0
-
--}
