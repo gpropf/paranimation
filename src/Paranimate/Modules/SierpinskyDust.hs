@@ -16,7 +16,6 @@ import System.Random
 import Number.Complex
 import Algebra.Ring( C )
 
-numPoints = 250000
 
 paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
 paramHash =
@@ -35,40 +34,6 @@ paramHash =
             , ("vpul", [(0.0, BVC ((-4.0) +: (3.0))),(500.0, BVC ((-4.0) +: (3.0)))])
             , ("sf", [(0.0, BVC ((150.0) +: (150.0))),(500.0, BVC ((150.0) +: (150.0)))])])
             
-
-drawCircle vp x y =
-  let colr = PixelRGBA8 255 0 0 255
-  in
-    withTexture (uniformTexture colr) $
-    fill $ circle (viewport2abs vp (Vec2 x y)) 30
-
-
-drawCircleCmplx vp c =
-  let (n,p) = c
-      ageClr = round $ ((fromInteger numPoints)-(fromInteger n))/(fromInteger numPoints) * 255
-      colr = PixelRGBA8 ageClr 150 0 70
-      --colr = PixelRGBA8 77 150 0 70
-      circleR = (x $ (scaleFactors vp)) / 75.0
-  in
-    withTexture (uniformTexture colr) $
-    fill $ circle (viewport2abs vp (Vec2 (real p) (imag p))) (realToFrac circleR)
-
-{-pickPoints :: (Ord t1, RandomGen t2, Algebra.Ring.C a, Floating a, Num t1,
-      Eq a) =>  T a -> t2 -> t1 -> [T a] -> [T a] -> [T a] -}
-pickPoints startP g n vertices groupShift pl =
-  if n <= 0 then pl else
-    let numVs = (length vertices) `div` 2
-        --numVs = (length vertices)
-        (i,g') = randomR (0, numVs - 1) g
-        (pf,g'') = randomR (1::Int,10) g'
-        groupShift' = if pf < 3 then numVs else 0
-        groupShiftMod = (groupShift + groupShift') `mod` (numVs*2)
-        d = (0.5 `scale` ((vertices !! (i + groupShiftMod)) - startP))
---        d = (0.5 `scale` ((vertices !! i) - startP))
-        newP = startP + d
-    in
-      pickPoints newP g' (n-1) vertices groupShiftMod ((n,newP):pl)
-
     
 makeFrame :: Data.Map.Map [Char] [(Double, BV Double)]
   -> StdGen -> Double
@@ -90,19 +55,56 @@ makeFrame paramHash g t = do
       (BVC vpul) = interpolatedValue linearInterpolate t "vpul" paramHash
       (BVC sf) = interpolatedValue linearInterpolate t "sf" paramHash
 
-      --newUR = ur + ul
       img = renderDrawing 1200 900 white $
         do          
-          --return ()
---          let vertices = [ul,ll,ur,lr]
           let vertices = [t11,t12,t13,t21,t22,t23]
-              vp = Viewport { upperLeft = vec2fromComplex vpul, scaleFactors = vec2fromComplex sf}
-              --sp = (0.0 :: Double) +: (0.0 :: Double)
+              vp = Viewport { upperLeft = vec2fromComplex vpul,
+                              scaleFactors = vec2fromComplex sf }
               sp = t11
               ps = pickPoints sp g numPoints vertices 0 []
---          mapM_ drawCircleCmplx (reverse ps)
           mapM_ (drawCircleCmplx vp) ps
-          --drawCircle x y
-          --drawCircle (real ul) (imag ul)
   img
+
+
+
+{- Module specific functions below. This is where we put graphics
+ "workhorse" functions, global variables, and types for example. -}
+
+numPoints = 250000
+
+drawCircleCmplx vp c =
+  let (n,p) = c
+      ageClr = round $ ((fromInteger numPoints)-(fromInteger n))/(fromInteger numPoints) * 255
+      colr = PixelRGBA8 ageClr 150 0 70
+      circleR = (x $ (scaleFactors vp)) / 75.0
+  in
+    withTexture (uniformTexture colr) $
+    fill $ circle (viewport2abs vp (Vec2 (real p) (imag p))) (realToFrac circleR)
+
+
+drawCircle vp x y =
+  let colr = PixelRGBA8 255 0 0 255
+  in
+    withTexture (uniformTexture colr) $
+    fill $ circle (viewport2abs vp (Vec2 x y)) 30
+
+
+
+{-pickPoints :: (Ord t1, RandomGen t2, Algebra.Ring.C a, Floating a, Num t1,
+      Eq a) =>  T a -> t2 -> t1 -> [T a] -> [T a] -> [T a] -}
+pickPoints startP g n vertices groupShift pl =
+  if n <= 0 then pl else
+    let numVs = (length vertices) `div` 2
+        --numVs = (length vertices)
+        (i,g') = randomR (0, numVs - 1) g
+        (pf,g'') = randomR (1::Int,10) g'
+        groupShift' = if pf < 3 then numVs else 0
+        groupShiftMod = (groupShift + groupShift') `mod` (numVs*2)
+        d = (0.5 `scale` ((vertices !! (i + groupShiftMod)) - startP))
+--        d = (0.5 `scale` ((vertices !! i) - startP))
+        newP = startP + d
+    in
+      pickPoints newP g' (n-1) vertices groupShiftMod ((n,newP):pl)
+
+
 

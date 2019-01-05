@@ -30,7 +30,41 @@ that details what the various options do.
 
 The package is designed to be modular so that one can create new
 animations relatively easily by just filling in the algorithm that
-generates a single frame. Providing the changing parameters that may
-be needed to drive it is fully automated by the overall framework.
+generates a single frame and providing a list of keyvalues for each
+variable used in the animation. The convention is to define a function
+in your module called makeFrame with the following type:
+
+```   
+makeFrame :: Data.Map.Map [Char] [(Double, BV Double)]
+  -> StdGen -> Double
+  -> Codec.Picture.Image Codec.Picture.PixelRGBA8
+
+makeFrame paramHash g t = ...
+```
+This function takes the following as arguments:
+
+paramHash: The special map that defines the keyvalues of our variables.
+
+g: A Haskell random number generator of type `StdGen`.
+
+t: A Double value that gives us the time. All values in our animation
+are ultimately a function of this index value.
+
+
+There is also a special global map (called "paramHash" by our convention)
+that defines the keyvalues for our animation:
+
+```
+paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
+```
+
+Please note that this object has the same type as the first argument
+in the `makeFrame` function. Providing the *specific* changing
+parameters that may be needed to drive the animation is fully
+automated by the overall framework. This is accomplished by a special
+type called "BV" and associated functions that allows the same set of
+functions to be used to interpolate values of various
+types. Currently, values of type Double, Int, and Complex from the
+Data.Complex package are supported.
 
 
