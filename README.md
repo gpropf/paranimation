@@ -45,14 +45,16 @@ This function takes the following as arguments:
 
 paramHash: The special map that defines the keyvalues of our variables.
 
-g: A Haskell random number generator of type `StdGen`.
+g: A Haskell random number generator of type `StdGen`. This is provided as a convenience since many animation algoritms require a random element.
 
 t: A Double value that gives us the time. All values in our animation
 are ultimately a function of this index value.
 
+It produces an abstract representation of a 4 channel color image of the RGBA type. This is a type defined in the Rasterific package as `Codec.Picture.Image Codec.Picture.PixelRGBA8`. This can be encoded as an actual image file by the `Codec.Picture.writePng` function, also from the Rasterific package.
 
-There is also a special global map (called "paramHash" by our convention)
-that defines the keyvalues for our animation:
+
+Finally, there is also a special global map (called "paramHash" by our
+convention) that defines the keyvalues for our animation:
 
 ```
 paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
@@ -66,5 +68,42 @@ type called "BV" and associated functions that allows the same set of
 functions to be used to interpolate values of various
 types. Currently, values of type Double, Int, and Complex from the
 Data.Complex package are supported.
+
+## Adding a New Module
+
+After creating your `makeFrame` function and `paramHash` map in your
+new module you will want to make it part of the larger
+program. Initially I had planned on creating a dynamic module loading
+architecture similar to that used in countless C and C++
+applications. I discovered that this is rather complicated and error
+prone in Haskell and decided to put it on the shelf for the moment. As a result, new modules are simply added to the project by adding a case branch in the `runModule` function in `Main.hs`. Here's the code that hooks in the "SierpinskyDust" module for example.
+
+```
+case m of
+  "sd" ->
+        let mw = ModuleWorkers SD.paramHash SD.makeFrame
+        in
+          sequenceFrames mw g rng "sd"
+```
+
+## Summary
+
+So to sum up, there are 3 steps to creating your own animation module.
+
+1. Create a `makeFrame` function to draw a single frame using the
+   parameters interpolated from the `paramHash` map.
+
+2. Define your `paramHash` keyvalues.
+
+3. Write your module into the `runModule` function in `Main.hs`.
+
+## Todo
+
+* `paramHash` should clearly be parsed in from a text file rather than
+  compiled in as at present. I used the compiled in approach because I
+  wanted to support several types without writing several parsers. My
+  plan is to ultimately use the Parsec library to parse this data.
+
+* Tests - we don't have any...
 
 

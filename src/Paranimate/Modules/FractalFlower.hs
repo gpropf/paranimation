@@ -25,10 +25,6 @@ makeFrame :: Data.Map.Map [Char] [(Double, BV Double)]
   -> Codec.Picture.Image Codec.Picture.PixelRGBA8
 makeFrame paramHash g t = do
   let white = PixelRGBA8 255 255 255 255
-      --drawColor = PixelRGBA8 0 0x86 0xc1 255
-      --vx = fromJust $ fromJust $ Data.Map.lookup "vx" params
-      --vy = fromJust $ fromJust $ Data.Map.lookup "vy" params
-      --r = fromJust $ fromJust $ Data.Map.lookup "r" params
       (BV accelCoeff) = interpolatedValue linearInterpolate t "accelCoeff" paramHash
       (BV pwr) = interpolatedValue linearInterpolate t "pwr" paramHash
 
@@ -36,7 +32,6 @@ makeFrame paramHash g t = do
       tracks = Data.List.map (\pm -> track (accelerate accelCoeff pwr) (200, pm)) $ pmInits
       tracksChunked = Data.List.map chunkTrack tracks
       img = renderDrawing 800 600 white $
-        --withTexture (uniformTexture drawColor) $
         do          
           mapM_ drawTrack tracksChunked
     in
