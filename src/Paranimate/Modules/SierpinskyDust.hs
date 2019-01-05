@@ -16,7 +16,7 @@ import System.Random
 import Number.Complex
 import Algebra.Ring( C )
 
-numPoints = 10000
+numPoints = 250000
 
 paramHash :: Data.Map.Map [Char] [(Double, BV Double)]
 paramHash =
