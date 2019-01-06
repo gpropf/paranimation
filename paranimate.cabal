@@ -39,7 +39,7 @@ library
               , numeric-prelude
               , ghc
               , random
-              , hint                
+              , parallel               
   exposed-modules:
                   Paranimate.Paranimate
   --              , Paranimate.ParamUtil
@@ -63,7 +63,7 @@ executable paranimate-exe
               , numeric-prelude
               , ghc
               , random
-              , hint
+              , parallel
               , optparse-applicative
   other-modules:
       Paths_paranimate

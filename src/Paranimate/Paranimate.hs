@@ -13,6 +13,7 @@ import Number.Complex
 import Algebra.Ring( C )
 import Text.Printf
 import System.Random
+import Control.Parallel.Strategies
 
 
 data IV a =
@@ -123,7 +124,10 @@ makeImageList
   -> [StdGen] -> [Double]
   -> [Codec.Picture.Image Codec.Picture.PixelRGBA8]
 makeImageList makeFrameFn paramHash gs rangeT
-  = Prelude.zipWith (makeFrameFn paramHash) gs rangeT
+  = let fs = Prelude.zipWith (makeFrameFn paramHash) gs rangeT
+        fs' = fs `using` parList rpar
+    in
+      fs'
 
 
 writeImageList

@@ -10,6 +10,9 @@ import Paranimate.Modules.SierpinskyDust as SD
 import System.Random
 import Options.Applicative
 import Data.Semigroup ((<>))
+import Control.Parallel.Strategies
+import Text.Printf
+import Codec.Picture( Image, PixelRGBA8( .. ), writePng )
 
 data Params = Params
   { moduleName :: String
@@ -69,7 +72,13 @@ makeGs n g gs =
     in
       makeGs (n-1) g2 (g1:gs)
 
-
+makeParFrame mw baseFilename g i t =
+  let fmtString = "%03d"
+      fmt x = printf fmtString x
+      fname = baseFilename ++ "-" ++ fmt i ++ ".png"
+  in
+    Codec.Picture.writePng fname $ (makeFrameFn mw) (pHash mw) g t
+    
 sequenceFrames
   :: ModuleWorkers -> StdGen -> (Double, Double, Double) -> [Char] -> IO ()
 sequenceFrames mw g (start,step,end) baseFilename =
@@ -77,3 +86,34 @@ sequenceFrames mw g (start,step,end) baseFilename =
     let rng = [start,start+step..end]
         gs = makeGs (length rng) g []
     sequence_ $ (writeImageList (makeFrameFn mw) (pHash mw) baseFilename gs rng)
+{-
+        frameActions = writeImageList (makeFrameFn mw) (pHash mw) baseFilename gs rng
+--    putStrLn "FOOO"
+        frameActions' = frameActions `using` parList rpar
+    mapM_ (\x -> do x) frameActions'
+-}
+
+{-
+zipTest mw baseFilename g =
+  let rngI = [(0::Int)..10]
+      rngT = [(0::Double)..10]
+  in
+    zipWith
+    (\i t -> makeParFrame mw baseFilename g i t)
+    rngI
+    rngT
+
+  -}  
+{-
+ ior <- (writeImageList (makeFrameFn mw) (pHash mw) baseFilename gs rng)
+    let ior' = ior `using` parList rseq
+    mapM_ (\x -> return x) ior'
+
+
+----------------
+
+    imgActions <- (writeImageList (makeFrameFn mw) (pHash mw) baseFilename gs rng)
+    imgActions `usingIO` parList rpar
+    --mapM_ (\x -> return x) imgActions'
+    --imgActions'
+-}
