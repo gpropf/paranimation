@@ -15,6 +15,7 @@ import Paranimate.Paranimate
 import System.Random
 import Number.Complex
 import Algebra.Ring( C )
+import Control.Parallel.Strategies
 
 
 paramHash :: Data.Map.Map [Char] [(Double, IV Double)]
@@ -76,6 +77,9 @@ makeFrame paramHash g t = do
               sp = s1
               ps = pickPoints sp g numPoints vertices 0 []
           mapM_ (drawCircleCmplx vp) ps
+--          cs' <- cs `using` parList rpar
+  --        return cs'
+         
   img
 
 
@@ -83,7 +87,7 @@ makeFrame paramHash g t = do
 {- Module specific functions below. This is where we put graphics
  "workhorse" functions, global variables, and types for example. -}
 
-numPoints = 20000
+numPoints = 125000
 
 drawCircleCmplx vp c =
   let (n,p) = c
