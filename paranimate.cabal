@@ -37,7 +37,7 @@ library
               , JuicyPixels
               , containers
               , numeric-prelude
-              , ghc
+              , linear
               , random
               , parallel               
   exposed-modules:
@@ -61,7 +61,7 @@ executable paranimate-exe
               , JuicyPixels
               , containers
               , numeric-prelude
-              , ghc
+              , linear
               , random
               , parallel
               , optparse-applicative

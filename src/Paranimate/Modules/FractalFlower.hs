@@ -13,6 +13,8 @@ import Algebra.Transcendental
 import Graphics.Rasterific
 import Paranimate.Paranimate
 import System.Random
+import Control.Parallel.Strategies
+
 
 paramHash :: Data.Map.Map [Char] [(Double, IV Double)]
 paramHash = fromList ([("pwr", [(0.0, IV 2.0),(50.0, IV 6.0),(500.0, IV 7.0)])
@@ -28,9 +30,9 @@ makeFrame paramHash g t = do
       (IV accelCoeff) = interpolatedValue linearInterpolate t "accelCoeff" paramHash
       (IV pwr) = interpolatedValue linearInterpolate t "pwr" paramHash
 
-      pmInits = Data.List.map (\v -> pm { vel = v }) $ Data.List.map (vec2Scale 1) $ radialVectors 60
-      tracks = Data.List.map (\pm -> track (accelerate accelCoeff pwr) (200, pm)) $ pmInits
-      tracksChunked = Data.List.map chunkTrack tracks
+      pmInits = (Data.List.map (\v -> pm { vel = v }) $ Data.List.map (vec2Scale 1) $ radialVectors 600)-- `using` parList rpar
+      tracks = (Data.List.map (\pm -> track (accelerate accelCoeff pwr) (200, pm)) $ pmInits) -- `using` parList rpar
+      tracksChunked = (Data.List.map chunkTrack tracks) -- `using` parList rpar
       img = renderDrawing 800 600 white $
         do          
           mapM_ drawTrack tracksChunked

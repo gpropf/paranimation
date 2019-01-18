@@ -45,6 +45,7 @@ extra-deps:
 - random-1.1
 - optparse-applicative-0.14.3.0
 - parallel-3.2.2.0
+- linear-1.20.8
 
 #- complex-generic-0.1.1.1
 #- split
