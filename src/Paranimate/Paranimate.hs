@@ -14,6 +14,7 @@ import Algebra.Ring( C )
 import Text.Printf
 import System.Random
 import Control.Parallel.Strategies
+import Linear as L
 
 
 data IV a =
@@ -51,6 +52,31 @@ data Viewport = Viewport { upperLeft :: Vec2 Double, scaleFactors :: Vec2 Double
 data ModuleWorkers = ModuleWorkers { pHash :: Data.Map.Map [Char] [(Double, IV Double)],
                                      makeFrameFn :: Data.Map.Map [Char] [(Double, IV Double)] -> StdGen -> Double -> Codec.Picture.Image Codec.Picture.PixelRGBA8
                                    }
+{-<<< Matrix code -}
+
+{-<<< For Testing -}
+ul = L.V2 (-2.0) 2.0
+lr = L.V2 2.0 (-2.0)
+
+scrul = L.V2 0.0 0.0
+scrlr = L.V2 800.0 600.0
+
+inM = affineMatrix33 ul lr
+outM = affineMatrix33 scrul scrlr
+{- For Testing >>>-}
+
+affineMatrix33 (L.V2 x1 y1) (L.V2 x2 y2) =  
+  let v1 = L.V3 x1 y1 1
+      v2 = L.V3 x2 y2 1
+      v3 = L.V3 1 1 1
+  in
+    L.V3 v1 v2 v3
+
+       
+transformationMatrix inM outM = (inv33 inM) !*! outM
+{-<<< Matrix code >>>-}
+
+
 
 (|+) :: Num a => Vec2 a -> Vec2 a -> Vec2 a
 (|+) (Vec2 x y) (Vec2 u v) = Vec2 (x+u) (y+v)
@@ -72,7 +98,7 @@ vec2abs :: Floating a => Vec2 a -> a
 vec2abs (Vec2 a b) = sqrt ((a*a) + (b*b))
 
 vec2toV2 :: (Real a1, Fractional a2) => Vec2 a1 -> Graphics.Rasterific.Linear.V2 a2
-vec2toV2 (Vec2 a b) = V2 (realToFrac a) (realToFrac b)
+vec2toV2 (Vec2 a b) = Graphics.Rasterific.Linear.V2 (realToFrac a) (realToFrac b)
 
 {- -}
 viewport2abs :: Fractional a => Viewport -> Vec2 Double -> Graphics.Rasterific.Linear.V2 a

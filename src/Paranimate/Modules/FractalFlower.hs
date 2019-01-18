@@ -87,6 +87,21 @@ drawTrack t = do
               stroke 3 JoinRound (CapRound, CapRound) $
               line (viewport2abs vp (pos pmStart)) (viewport2abs vp (pos pmEnd))) t
 
+{- 
+drawTrack_m tM t = do
+  let velMax = maximum $ Data.List.map (\(p1,p2) -> (magnitude . vel) p2) t
+      accMax = maximum $ Data.List.map (\(p1,p2) -> (magnitude . acc) p2) t
+  mapM_ (\(pmStart, pmEnd) ->
+            let red = round (magnitude (vel pmStart) / velMax * 255)
+                blue = round (magnitude (acc pmStart) / accMax * 255)
+                colr = PixelRGBA8 red 0 blue 255
+            in
+              withTexture (uniformTexture colr) $
+              stroke 3 JoinRound (CapRound, CapRound) $
+              line (viewport2abs vp (pos pmStart)) (viewport2abs vp (pos pmEnd))) t
+
+-}
+
 
 accelerate :: Double -> Double -> PointMass -> PointMass
 accelerate accelCoeff pwr pm =
