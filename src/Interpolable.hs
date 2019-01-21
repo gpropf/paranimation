@@ -1,7 +1,7 @@
 --{-# LANGUAGE MultiParamTypeClasses, TypeSynonymInstances
 --, FlexibleInstances#-}
 {-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies
-    , FlexibleContexts, AllowAmbiguousTypes #-}
+    , FlexibleContexts, FlexibleInstances, AllowAmbiguousTypes #-}
 
 module Interpolable where
 
@@ -13,8 +13,8 @@ type InterpState p v = [(p,v)]
 class (MonadState (InterpState p v) m) => Interpolable p v m where
   getv :: p -> v
 
-instance (Interpolable p v m) (InterpState Double Int) where
-  getv p = p
+instance Interpolable Double Int m where
+  getv p = 1
   
 {-
 --class (State (Interpolable p v) a) => Interpolable p v where

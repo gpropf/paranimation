@@ -55,25 +55,64 @@ data ModuleWorkers = ModuleWorkers { pHash :: Data.Map.Map [Char] [(Double, IV D
 {-<<< Matrix code -}
 
 {-<<< For Testing -}
+
+{-
 ul = L.V2 (-2.0) 2.0
 lr = L.V2 2.0 (-2.0)
+ll = L.V2 (-2.0) (-2.0)
 
 scrul = L.V2 0.0 0.0
 scrlr = L.V2 800.0 600.0
+scrll = L.V2 0 600.0
+-}
+{-
+ul = (-2.0) +: 2.0
+lr = 2.0 +: (-2.0)
+ll = (-2.0) +: (-2.0)
 
+scrul = 0.0 +: 0.0
+scrlr = 800.0 +: 600.0
+scrll = 0 +: 600.0
+-}
+
+{-
 inM = affineMatrix33 ul lr
 outM = affineMatrix33 scrul scrlr
+-}
 {- For Testing >>>-}
-
+{-
 affineMatrix33 (L.V2 x1 y1) (L.V2 x2 y2) =  
   let v1 = L.V3 x1 y1 1
       v2 = L.V3 x2 y2 1
       v3 = L.V3 1 1 1
   in
     L.V3 v1 v2 v3
+-}
 
-       
-transformationMatrix inM outM = (inv33 inM) !*! outM
+transformationMatrix (ul1,lr1,ll1) (ul2,lr2,ll2) =
+  let inM = L.V3 (t ul1) (t lr1) (t ll1)
+      outM = L.V3 (t ul2) (t lr2) (t ll2)
+  in
+    (inv33 inM) !*! outM
+  where
+    t = lv2_lv3 . cplx_lv2
+
+lv2_lv3 (L.V2 x y) = L.V3 x y 1
+vec2_lv2 (Vec2 x y) = L.V2 x y
+lv3_glv2 (L.V3 x y _) = Graphics.Rasterific.Linear.V2 x y
+
+cplx_lv2 c =
+  let r = real c
+      i = imag c
+  in
+    L.V2 r i 
+
+projectPtWithMatrix m p =
+  let p3d = (lv2_lv3 . vec2_lv2) p
+  in
+    fmap realToFrac $ lv3_glv2 $ p3d *! m
+                   
+--transformationMatrix inM outM = (inv33 inM) !*! outM
 {-<<< Matrix code >>>-}
 
 
@@ -138,9 +177,13 @@ valueOnCurve
   :: Ord a => ((a, b) -> (a, b) -> a -> t) -> [(a, b)] -> a -> t
 valueOnCurve interpFn curvePoints t =
   let (lts,gts) = Data.List.partition (\(tn,vn) -> t >= tn) curvePoints
-      
   in
-    interpFn (last lts) (head gts) t
+    case gts of
+      [] ->
+        let (p:ps) = reverse lts
+        in
+          interpFn p (head ps) t
+      gts' -> interpFn (last lts) (head gts') t
 
 
 

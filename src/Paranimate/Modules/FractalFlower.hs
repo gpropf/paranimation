@@ -17,25 +17,40 @@ import Control.Parallel.Strategies
 
 
 paramHash :: Data.Map.Map [Char] [(Double, IV Double)]
-paramHash = fromList ([("pwr", [(0.0, IV 2.0),(50.0, IV 6.0),(500.0, IV 7.0)])
-                      , ("accelCoeff", [(0.0,IV 0.2),(500.0,IV 0.2)])])
+paramHash = fromList ([("pwr", [(0.0, IV (-0.0)),(1000.0, IV 10.0)])
+                      , ("ul", [(0.0, IVC ((-2.0) +: 2)),(1000.0, IVC ((1.0) +: 1.0))])
+                      , ("lr", [(0.0, IVC ((2.0) +: (-2))),(1000.0, IVC ((-1.0) +: (-1.0)))])
+                      , ("ll", [(0.0, IVC ((-2.0) +: (-2))),(1000.0, IVC ((-1.0) +: (1.0)))])
 
+                      , ("accelCoeff", [(0.0,IV 0.2),(1000.0,IV 0.2)])])
+
+{- Screen size stays constant -}
+scrul = 0.0 +: 0.0
+scrlr = 1600.0 +: 1200.0
+scrll = 0 +: 1200.0
 
            
 makeFrame :: Data.Map.Map [Char] [(Double, IV Double)]
   -> StdGen -> Double
   -> Codec.Picture.Image Codec.Picture.PixelRGBA8
 makeFrame paramHash g t = do
-  let white = PixelRGBA8 255 255 255 255
+  let greyInd = 0
+      bkgrd = PixelRGBA8 greyInd 10 greyInd 255
       (IV accelCoeff) = interpolatedValue linearInterpolate t "accelCoeff" paramHash
       (IV pwr) = interpolatedValue linearInterpolate t "pwr" paramHash
+      (IVC ul) = interpolatedValue linearInterpolate t "ul" paramHash
+      (IVC lr) = interpolatedValue linearInterpolate t "lr" paramHash
+      (IVC ll) = interpolatedValue linearInterpolate t "ll" paramHash
 
+
+      m = transformationMatrix (ul,lr,ll) (scrul,scrlr,scrll)
+      
       pmInits = (Data.List.map (\v -> pm { vel = v }) $ Data.List.map (vec2Scale 1) $ radialVectors 600)-- `using` parList rpar
       tracks = (Data.List.map (\pm -> track (accelerate accelCoeff pwr) (200, pm)) $ pmInits) -- `using` parList rpar
       tracksChunked = (Data.List.map chunkTrack tracks) -- `using` parList rpar
-      img = renderDrawing 800 600 white $
+      img = renderDrawing 1600 1200 bkgrd $
         do          
-          mapM_ drawTrack tracksChunked
+          mapM_ (drawTrackWithMatrix m) tracksChunked
     in
     img
 
@@ -60,7 +75,7 @@ pm :: PointMass
 pm = PointMass 4 z (Vec2 0.1 0.1) (Vec2 (-0.01) 0.02)
 
 vp :: Viewport
-vp = Viewport { upperLeft = Vec2 (-2) (1.5), scaleFactors = Vec2 200 200}
+vp = Viewport { upperLeft = Vec2 (-2) (1.5), scaleFactors = Vec2 400 400}
 
 {- Global Helper Vars >>-}
 
@@ -87,20 +102,20 @@ drawTrack t = do
               stroke 3 JoinRound (CapRound, CapRound) $
               line (viewport2abs vp (pos pmStart)) (viewport2abs vp (pos pmEnd))) t
 
-{- 
-drawTrack_m tM t = do
-  let velMax = maximum $ Data.List.map (\(p1,p2) -> (magnitude . vel) p2) t
-      accMax = maximum $ Data.List.map (\(p1,p2) -> (magnitude . acc) p2) t
+ 
+drawTrackWithMatrix m t = do
+  let velMax = maximum $ Data.List.map (\(p1,p2) -> (vec2abs . vel) p2) t
+      accMax = maximum $ Data.List.map (\(p1,p2) -> (vec2abs . acc) p2) t
   mapM_ (\(pmStart, pmEnd) ->
-            let red = round (magnitude (vel pmStart) / velMax * 255)
-                blue = round (magnitude (acc pmStart) / accMax * 255)
+            let red = round (vec2abs (vel pmStart) / velMax * 255)
+                blue = round (vec2abs (acc pmStart) / accMax * 255)
                 colr = PixelRGBA8 red 0 blue 255
             in
               withTexture (uniformTexture colr) $
               stroke 3 JoinRound (CapRound, CapRound) $
-              line (viewport2abs vp (pos pmStart)) (viewport2abs vp (pos pmEnd))) t
+              line (projectPtWithMatrix m (pos pmStart)) (projectPtWithMatrix m (pos pmEnd))) t
 
--}
+
 
 
 accelerate :: Double -> Double -> PointMass -> PointMass
