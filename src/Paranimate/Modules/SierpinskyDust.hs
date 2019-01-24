@@ -99,6 +99,7 @@ drawCircleCmplx vp c =
     fill $ circle (viewport2abs vp (Vec2 (real p) (imag p))) (realToFrac circleR)
 
 
+
 drawCircle vp x y =
   let colr = PixelRGBA8 255 0 0 255
   in
