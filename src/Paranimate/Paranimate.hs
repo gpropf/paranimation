@@ -1,3 +1,8 @@
+--{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies
+--    , FlexibleContexts, FlexibleInstances, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+
 module Paranimate.Paranimate where
 
 import Prelude hiding (lookup)
@@ -5,8 +10,10 @@ import Codec.Picture( Image, PixelRGBA8( .. ), writePng )
 import Graphics.Rasterific
 import Graphics.Rasterific.Texture
 import Graphics.Rasterific.Linear
+--import Graphics.Rasterific.Command
 import Data.Map
 import Control.Monad
+import Control.Monad.State
 import Data.Maybe
 import Data.List
 import Number.Complex
@@ -89,6 +96,26 @@ affineMatrix33 (L.V2 x1 y1) (L.V2 x2 y2) =
     L.V3 v1 v2 v3
 -}
 
+type TransformMatrix = L.V3 (L.V3 Double)
+
+data PState a = PState { projectionMatrix :: L.V3 (L.V3 a), hScale :: a, vScale :: a }
+
+
+
+
+putPst
+  :: (Control.Monad.State.MonadState (PState a) m, Num a, Fractional a) =>
+     L.V3 (L.V3 a) -> m ()
+putPst m = do
+  let (L.V3 hDiag vDiag zDiag) = L.diagonal m
+      hScale = abs hDiag * 2
+      vScale = abs vDiag * 2
+      pst = PState m hScale vScale
+  put pst
+
+
+
+                         
 transformationMatrix (ul1,lr1,ll1) (ul2,lr2,ll2) =
   let inM = L.V3 (t ul1) (t lr1) (t ll1)
       outM = L.V3 (t ul2) (t lr2) (t ll2)
@@ -99,13 +126,16 @@ transformationMatrix (ul1,lr1,ll1) (ul2,lr2,ll2) =
 
 lv2_lv3 (L.V2 x y) = L.V3 x y 1
 vec2_lv2 (Vec2 x y) = L.V2 x y
-lv3_glv2 (L.V3 x y _) = Graphics.Rasterific.Linear.V2 x y
+lv3_glv2 (L.V3 x y _) = Graphics.Rasterific.Linear.V2 (realToFrac x) (realToFrac y)
 
 cplx_lv2 c =
   let r = real c
       i = imag c
   in
     L.V2 r i 
+
+
+
 
 projectPtWithMatrix m p =
   let p3d = (lv2_lv3 . vec2_lv2) p
@@ -114,7 +144,103 @@ projectPtWithMatrix m p =
                    
 --transformationMatrix inM outM = (inv33 inM) !*! outM
 {-<<< Matrix code >>>-}
+projectPt
+  :: (MonadState (L.V3 (L.V3 a)) Graphics.Rasterific.V2, Real a,
+      Fractional b) =>
+     Vec2 a -> Graphics.Rasterific.V2 b
+projectPt p = do
+  m <- get
+  let p3d = (lv2_lv3 . vec2_lv2) p
+  fmap realToFrac $ lv3_glv2 $ p3d *! m
 
+
+projectPt2 p = do
+  pst <- get
+  --let pp = (lv3_glv2 . lv2_lv3 . vec2_lv2) p
+  let p3d = (lv2_lv3 . vec2_lv2) p
+  return $ lv3_glv2 $ p3d *! (projectionMatrix pst)
+    --Graphics.Rasterific.Linear.V2 x y
+
+{-
+projectedCircle
+  :: (MonadState
+        (PState Float)
+        (t (Control.Monad.Free.Church.F
+              (Graphics.Rasterific.Command.DrawCommand px))),
+      MonadTrans t) =>
+     Vec2 Float
+     -> Float
+     -> t (Control.Monad.Free.Church.F
+             (Graphics.Rasterific.Command.DrawCommand px)) () -}
+projectedCircle p r = do
+  pst <- get
+  p' <- projectPt2 p
+  let hs = hScale pst
+      vs = vScale pst
+  -- This makes sense if we assume that drawing circles is faster than ellipses
+  -- with two identical radii.
+  if hs == vs
+    then
+    lift $ fill $ circle p' (r * hs)
+    else
+    lift $ fill $ ellipse p' (r * hs) (r * vs)
+
+
+
+pscrul :: T Double
+pscrul = 0.0 +: 0.0
+pscrlr = 1600.0 +: 1200.0
+pscrll = 0 +: 1200.0
+
+pul = (-2.0) +: 2.0
+plr = 2.0 +: (-2.0)
+pll = (-2.0) +: (-2.0)    
+
+
+--testProjectedCircles :: (MonadState (PState Double) m) =>
+     -- m (L.V3 (L.V3 Double))
+ --    m (Image PixelRGBA8)
+testProjectedCircles :: Monad m => StateT (PState Double) m (Image PixelRGBA8)
+testProjectedCircles = do
+  let m = transformationMatrix (pul,plr,pll) (pscrul,pscrlr,pscrll)
+  putPst m
+
+  
+  let greyInd = 0
+      bkgrd = PixelRGBA8 greyInd 10 greyInd 255
+      red = 255
+      blue = 100 
+      colr = PixelRGBA8 red 0 blue 255
+      
+      img = renderDrawing 1600 1200 bkgrd $
+        withTexture (uniformTexture colr) $
+        do
+          fill $ circle (Graphics.Rasterific.Linear.V2 0 0) 30 
+          --projectedCircle (Vec2 0.1 0.3) 0.5 
+  return img
+      
+
+--  let p3d = (lv2_lv3 . vec2_lv2) p
+  --fmap realToFrac $ lv3_glv2 $ p3d *! m
+
+{-
+testMonad :: StateT (PState Double) (Image PixelRGBA8)
+testMonad = do
+  let m = transformationMatrix (pul,plr,pll) (pscrul,pscrlr,pscrll)
+  putPst m
+  let white = PixelRGBA8 255 255 255 255
+      drawColor = PixelRGBA8 0 0x86 0xc1 255
+      recColor = PixelRGBA8 0xFF 0x53 0x73 255
+      img = renderDrawing 400 200 white $
+         withTexture (uniformTexture drawColor) $ do
+            fill $ circle (Graphics.Rasterific.Linear.V2 0 0) 30
+            stroke 4 JoinRound (CapRound, CapRound) $
+                   circle (Graphics.Rasterific.Linear.V2 400 200) 40
+            withTexture (uniformTexture recColor) .
+                   fill $ rectangle (Graphics.Rasterific.Linear.V2 100 100) 200 100
+  return img
+  
+-}
 
 
 (|+) :: Num a => Vec2 a -> Vec2 a -> Vec2 a

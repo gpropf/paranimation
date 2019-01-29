@@ -7,6 +7,7 @@ module Interpolable where
 
 -- import Control.Monad.State
 import Data.List
+import Number.Complex
 
 type InterpState x y = [(x,y)]
 
@@ -29,17 +30,25 @@ class (Ord x, Eq x, Eq y, Num x) => Interpolable x y where
 
         
 linearInterpolate
-  :: (Interpolable a b, Fractional a, Num b) => (a, b) -> (a, b) -> a -> b
+  :: (Interpolable a b, Fractional a, Fractional b, Num b) => (a, b) -> (a, b) -> a -> b
 linearInterpolate (x1,y1) (x2,y2) x =
-  let rs = (y2x y2) - (y2x y1)
+  let rs = y2 - y1
       rn = x2 - x1
-      m = rs / rn
-      b = (y2x y1) - m * x1
+      m = rs / (x2y rn)
+      b = y1 - m * (x2y x1)
       
   in
-    x2y $ m * x + b
+    m * (x2y x) + b
 --    rs
  
 instance Interpolable Double Integer where
   x2y = round
   y2x = fromInteger
+
+
+instance Interpolable Double (Number.Complex.T Double) where
+  x2y x = x +: 0
+  y2x y = real y
+
+ilc = InterpList [(5::Double, 4.0 +: 0), (15::Double, 0 +: 4)]
+il = InterpList [(5::Double, 4.0), (15::Double, 14)]
