@@ -9,7 +9,7 @@ import Prelude hiding (lookup)
 import Codec.Picture( Image, PixelRGBA8( .. ), writePng )
 import Graphics.Rasterific
 import Graphics.Rasterific.Texture
-import Graphics.Rasterific.Linear
+import Graphics.Rasterific.Linear as GL
 --import Graphics.Rasterific.Command
 import Data.Map
 import Control.Monad
@@ -22,6 +22,7 @@ import Text.Printf
 import System.Random
 import Control.Parallel.Strategies
 import Linear as L
+import Control.Monad.Free.Church( F, fromF )
 
 
 data IV a =
@@ -126,7 +127,7 @@ transformationMatrix (ul1,lr1,ll1) (ul2,lr2,ll2) =
 
 lv2_lv3 (L.V2 x y) = L.V3 x y 1
 vec2_lv2 (Vec2 x y) = L.V2 x y
-lv3_glv2 (L.V3 x y _) = Graphics.Rasterific.Linear.V2 (realToFrac x) (realToFrac y)
+lv3_glv2 (L.V3 x y _) = GL.V2 (realToFrac x) (realToFrac y)
 
 cplx_lv2 c =
   let r = real c
@@ -159,7 +160,21 @@ projectPt2 p = do
   --let pp = (lv3_glv2 . lv2_lv3 . vec2_lv2) p
   let p3d = (lv2_lv3 . vec2_lv2) p
   return $ lv3_glv2 $ p3d *! (projectionMatrix pst)
-    --Graphics.Rasterific.Linear.V2 x y
+    --GL.V2 x y
+
+
+
+pscrul :: T Double
+
+pscrul = 0.0 +: 0.0
+pscrlr = 1600.0 +: 1200.0
+pscrll = 0 +: 1200.0
+
+pul = (-2.0) +: 2.0
+plr = 2.0 +: (-2.0)
+pll = (-2.0) +: (-2.0)    
+
+
 
 {-
 projectedCircle
@@ -172,53 +187,82 @@ projectedCircle
      -> Float
      -> t (Control.Monad.Free.Church.F
              (Graphics.Rasterific.Command.DrawCommand px)) () -}
+projectedCircle :: MonadState (PState Double) m =>
+                   Vec2 Double -> Double -> m (Drawing px ())
 projectedCircle p r = do
   pst <- get
   p' <- projectPt2 p
-  let hs = hScale pst
-      vs = vScale pst
+  let hs = realToFrac $ hScale pst
+      vs = realToFrac $ vScale pst
+      rf = realToFrac r
   -- This makes sense if we assume that drawing circles is faster than ellipses
   -- with two identical radii.
   if hs == vs
     then
-    lift $ fill $ circle p' (r * hs)
+    return $ fill $ circle p' (rf * hs)
     else
-    lift $ fill $ ellipse p' (r * hs) (r * vs)
+    return $ fill $ ellipse p' (rf * hs) (rf * vs)
 
 
 
-pscrul :: T Double
-pscrul = 0.0 +: 0.0
-pscrlr = 1600.0 +: 1200.0
-pscrll = 0 +: 1200.0
+{-
+fillCircle = do
+  pst <- get
+  r <- fill $ circle (GL.V2 0 0) 30
+  return $ lift r
+-}
 
-pul = (-2.0) +: 2.0
-plr = 2.0 +: (-2.0)
-pll = (-2.0) +: (-2.0)    
-
-
---testProjectedCircles :: (MonadState (PState Double) m) =>
-     -- m (L.V3 (L.V3 Double))
- --    m (Image PixelRGBA8)
-testProjectedCircles :: Monad m => StateT (PState Double) m (Image PixelRGBA8)
+--testProjectedCircles :: Monad m => StateT (PState Double) m (Image PixelRGBA8)
+--testProjectedCircles :: StateT (PState Double) IO (Drawing px0 ())
+--testProjectedCircles :: MonadIO (StateT s m)
+{-
 testProjectedCircles = do
   let m = transformationMatrix (pul,plr,pll) (pscrul,pscrlr,pscrll)
-  putPst m
+      v = Vec2 0.2 0.3
+      r = 0.5
 
+  putPst m
+  --plainCircle <- lift $ fill $ circle (GL.V2 0 0) 30
+  --pc <- projectedCircle (Vec2 0.1 0.3) 0.5
+  
+  --ln1 <- liftIO getLine
+  
+  --pc <- projectedCircle v r
   
   let greyInd = 0
       bkgrd = PixelRGBA8 greyInd 10 greyInd 255
       red = 255
       blue = 100 
       colr = PixelRGBA8 red 0 blue 255
-      
+      {-
       img = renderDrawing 1600 1200 bkgrd $
         withTexture (uniformTexture colr) $
         do
-          fill $ circle (Graphics.Rasterific.Linear.V2 0 0) 30 
-          --projectedCircle (Vec2 0.1 0.3) 0.5 
-  return img
-      
+          --fillCircle
+          fill $ circle (GL.V2 0 0) 30 
+          --projectedCircle (Vec2 0.1 0.3) 0.5 -}
+  
+  return pc
+      -}
+
+--type Drawing px = F (DrawCommand px)
+testRasterificTypes1 :: StateT (PState Double) (Drawing PixelRGBA8) ()
+testRasterificTypes1 =  do
+  pst <- get
+  let recColor = PixelRGBA8 0xFF 0x53 0x73 255
+      v = Vec2 0.3 0.4
+      r = 0.25
+  c1 <- lift $ fill $ circle (GL.V2 0 0) 30
+  c2 <- lift $ stroke 4 JoinRound (CapRound, CapRound) $
+        circle (GL.V2 400 200) 40
+  r1 <- lift $ withTexture (uniformTexture recColor) .
+        fill $ rectangle (GL.V2 100 100) 200 100
+  pc <- projectedCircle v r
+  return ()
+  
+
+
+
 
 --  let p3d = (lv2_lv3 . vec2_lv2) p
   --fmap realToFrac $ lv3_glv2 $ p3d *! m
@@ -233,11 +277,11 @@ testMonad = do
       recColor = PixelRGBA8 0xFF 0x53 0x73 255
       img = renderDrawing 400 200 white $
          withTexture (uniformTexture drawColor) $ do
-            fill $ circle (Graphics.Rasterific.Linear.V2 0 0) 30
+            fill $ circle (GL.V2 0 0) 30
             stroke 4 JoinRound (CapRound, CapRound) $
-                   circle (Graphics.Rasterific.Linear.V2 400 200) 40
+                   circle (GL.V2 400 200) 40
             withTexture (uniformTexture recColor) .
-                   fill $ rectangle (Graphics.Rasterific.Linear.V2 100 100) 200 100
+                   fill $ rectangle (GL.V2 100 100) 200 100
   return img
   
 -}
@@ -262,11 +306,11 @@ vec2Scale s v = Vec2 (s * (x v)) (s * (y v))
 vec2abs :: Floating a => Vec2 a -> a
 vec2abs (Vec2 a b) = sqrt ((a*a) + (b*b))
 
-vec2toV2 :: (Real a1, Fractional a2) => Vec2 a1 -> Graphics.Rasterific.Linear.V2 a2
-vec2toV2 (Vec2 a b) = Graphics.Rasterific.Linear.V2 (realToFrac a) (realToFrac b)
+vec2toV2 :: (Real a1, Fractional a2) => Vec2 a1 -> GL.V2 a2
+vec2toV2 (Vec2 a b) = GL.V2 (realToFrac a) (realToFrac b)
 
 {- -}
-viewport2abs :: Fractional a => Viewport -> Vec2 Double -> Graphics.Rasterific.Linear.V2 a
+viewport2abs :: Fractional a => Viewport -> Vec2 Double -> GL.V2 a
 viewport2abs vp p =
   let px  = (x p - (x $ upperLeft vp)) * (x $ scaleFactors vp)
       py  = ((y $ upperLeft vp) - y p) * (y $ scaleFactors vp)
