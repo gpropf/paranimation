@@ -79,6 +79,7 @@ putPst m = do
       pst = PState m hScale vScale
   put pst
 
+
 testStateLoop :: (Control.Monad.State.MonadState ([a],[a]) m, Num a, Fractional a) => m ()
 testStateLoop = do
   (inL,outL) <- get
@@ -90,7 +91,7 @@ recurseState (inL,outL) =
   case inL of
     [] -> do
       return ([],outL)
-    (x:xs) -> do
+    inL_ -> do
       (inL',outL') <- runState testStateLoop (inL,outL)
       recurseState (inL',outL')
       
