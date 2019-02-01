@@ -168,6 +168,10 @@ vp = Viewport { upperLeft = Vec2 (-2) (1.5), scaleFactors = Vec2 400 400}
 
 {-<< Module helper functions -}
 
+{-
+chunkTrack: breaks tracks into even and odd PMs and then constructs new lists of (even,odd) pairs. These are used as the start and end points for line segments. Just doing this, however, leads to a dashed-line effect as the points have moved between the last odd point and the next even. We thus drop a point and repeat the process. This creates new line segments from (odd,even) pairs. Finally we append the lists. This final list allows for the creation of continuous looking lines.
+-}
+
 chunkTrack :: Integral a => [(a, b)] -> [(b, b)]
 chunkTrack t = let (tEven1,tOdd1) = Data.List.partition (\(i,pm) -> i `mod` 2 == 0) $ Data.List.drop 1 t
                    (tEven2,tOdd2) = Data.List.partition (\(i,pm) -> i `mod` 2 == 0) t

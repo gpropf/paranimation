@@ -43,7 +43,9 @@ paramHash =
             , ("t21", [(0.0, IVC ((-2) +: (-1))),(500.0, IVC ((4) +: (5)))])
             , ("t22", [(0.0, IVC ((0.75) +: (-2.75))),(500.0, IVC ((4.75) +: (1.25)))])
             , ("t23", [(0.0, IVC ((-3) +: (-3))),(500.0, IVC ((1) +: (1)))])
-            , ("vpul", [(0.0, IVC ((-4.0) +: (3.0))),(500.0, IVC ((-4.0) +: (3.0)))])
+            , ("scrul", [(0.0, IVC ((-4.0) +: (3.0))),(500.0, IVC ((-4.0) +: (3.0)))])
+            , ("scrlr", [(0.0, IVC ((-4.0) +: (-3.0))),(500.0, IVC ((-4.0) +: (-3.0)))])
+            , ("scrll", [(0.0, IVC ((4.0) +: (-3.0))),(500.0, IVC ((4.0) +: (-3.0)))])
             , ("sf", [(0.0, IVC ((200.0) +: (200.0))),(500.0, IVC ((200.0) +: (200.0)))])])
             
     
@@ -66,13 +68,17 @@ makeFrame paramHash g t = do
       (IVC s6) = interpolatedValue linearInterpolate t "s6" paramHash
       (IVC s7) = interpolatedValue linearInterpolate t "s7" paramHash
       (IVC s8) = interpolatedValue linearInterpolate t "s8" paramHash
-      (IVC vpul) = interpolatedValue linearInterpolate t "vpul" paramHash
+      (IVC scrul) = interpolatedValue linearInterpolate t "scrul" paramHash
+      (IVC scrlr) = interpolatedValue linearInterpolate t "scrlr" paramHash
+      (IVC scrll) = interpolatedValue linearInterpolate t "scrll" paramHash
       (IVC sf) = interpolatedValue linearInterpolate t "sf" paramHash
+      m = transformationMatrix (ul,lr,ll) (scrul,scrlr,scrll)
 
+  
       img = renderDrawing 1600 1200 bkg $
         do          
           let vertices = [s1,s2,s3,s4,s5,s6,s7,s8]
-              vp = Viewport { upperLeft = vec2fromComplex vpul,
+              vp = Viewport { upperLeft = vec2fromComplex scrul,
                               scaleFactors = vec2fromComplex sf }
               sp = s1
               ps = pickPoints sp g numPoints vertices 0 []
@@ -98,6 +104,16 @@ drawCircleCmplx vp c =
     withTexture (uniformTexture colr) $
     fill $ circle (viewport2abs vp (Vec2 (real p) (imag p))) (realToFrac circleR)
 
+{-
+!!! UNFINISHED function !!!
+
+drawCircleWithMatrix m n r c = 
+ let  ageClr = round $ ((fromInteger numPoints)-(fromInteger n))/(fromInteger numPoints) * 255
+      colr = PixelRGBA8 ageClr 150 0 100
+ in
+   withTexture (uniformTexture colr) $
+    fill $ circle (viewport2abs vp (Vec2 (real p) (imag p))) (realToFrac circleR)
+-}
 
 
 drawCircle vp x y =
