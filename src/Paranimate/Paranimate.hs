@@ -80,11 +80,16 @@ putPst m = do
   put pst
 
 
-testStateLoop :: (Control.Monad.State.MonadState ([a],[a]) m, Num a, Fractional a) => m ()
+--testStateLoop :: (Control.Monad.State.MonadState ([a],[a]) m, Num a, Fractional a) => m ()
+testStateLoop :: (Control.Monad.State.MonadState ([[a]],[[a]]) m) => m ()
 testStateLoop = do
   (inL,outL) <- get
-  let (x:xs) = inL
-  put (xs,x:outL)
+  let heads = Data.List.map head inL
+      tls = Data.List.map tail inL
+  put (tls, heads:outL)
+
+--  let (x:xs) = inL
+--  put (xs,x:outL)
 
 
 recurseState (inL,outL) =
@@ -92,9 +97,17 @@ recurseState (inL,outL) =
     [] -> do
       return ([],outL)
     inL_ -> do
-      (inL',outL') <- runState testStateLoop (inL,outL)
+      let (inL',outL') = execState testStateLoop (inL,outL)
       recurseState (inL',outL')
-      
+
+
+
+recurseState2 (inL,outL) =
+  if length (head inL) < 1 then (inL,outL)
+  else do
+    let (inL',outL') = execState testStateLoop (inL,outL)
+    recurseState2 (inL',outL')
+
                           
 transformationMatrix (ul1,lr1,ll1) (ul2,lr2,ll2) =
   let inM = L.V3 (t ul1) (t lr1) (t ll1)
