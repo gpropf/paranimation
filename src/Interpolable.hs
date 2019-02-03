@@ -8,6 +8,7 @@ module Interpolable where
 -- import Control.Monad.State
 import Data.List
 import Number.Complex
+import Control.Monad.State
 
 type InterpState x y = [(x,y)]
 
@@ -52,3 +53,17 @@ instance Interpolable Double (Number.Complex.T Double) where
 
 ilc = InterpList [(5::Double, 4.0 +: 0), (15::Double, 0 +: 4)]
 il = InterpList [(5::Double, 4.0), (15::Double, 14)]
+
+
+{- facSt: Just playing around with the State monad here and trying to
+learn how to implement a few basic things using it. Here we have a
+factorial function using state.This isn't really related to this
+project -}
+facSt n = do
+--  put (n*2,1)
+  runState (replicateM_ n mulSt) (n,1)
+  where
+    mulSt = do
+      (n,p) <- get
+      let p' = n * p
+      put (n - 1, p')

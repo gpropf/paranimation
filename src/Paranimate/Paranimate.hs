@@ -67,7 +67,8 @@ type TransformMatrix = L.V3 (L.V3 Double)
 data PState a = PState { projectionMatrix :: L.V3 (L.V3 a), hScale :: a, vScale :: a }
 
 
-
+everyf n [] = []
+everyf n as  = head as : everyf n (Data.List.drop n as)
 
 putPst
   :: (Control.Monad.State.MonadState (PState a) m, Num a, Fractional a) =>
@@ -132,23 +133,12 @@ toRasterificTransform (L.V3 (L.V3 a b _) (L.V3 c d _) (L.V3 e f _)) =
   GT.Transformation a c e b d f
 
 
-{-
-transposeLists :: [[b]] -> [[b]] -> [b]
-transposeLists inList outList =
-  let (heads,tails) = Data.List.map (\(b:bs) -> (b,bs)) inList
-  in
-    transposeLists tails heads:outList
-    
-transposeLists [] outList = outList
- -} 
-
-
 projectPtWithMatrixFmap m p =
   let p3d = (lv2_lv3 . vec2_lv2) p
   in
     fmap realToFrac $ lv3_glv2 $ p3d *! m
                    
---transformationMatrix inM outM = (inv33 inM) !*! outM
+
 {-<<< Matrix code >>>-}
 projectPt
   :: (MonadState (L.V3 (L.V3 a)) Graphics.Rasterific.V2, Real a,
@@ -172,11 +162,7 @@ projectPtWithMatrix m p =
   in
     lv3_glv2 $ p3d *! m
 
-
-
-
 pscrul :: T Double
-
 pscrul = 0.0 +: 0.0
 pscrlr = 1600.0 +: 1200.0
 pscrll = 0 +: 1200.0
@@ -184,7 +170,6 @@ pscrll = 0 +: 1200.0
 pul = (-2.0) +: 2.0
 plr = 2.0 +: (-2.0)
 pll = (-2.0) +: (-2.0)    
-
 
 
 projectedCircle :: MonadState (PState Double) m =>
@@ -203,24 +188,7 @@ projectedCircle p r = do
     else
     return $ fill $ ellipse p' (rf * hs) (rf * vs)
 
-{-
 
-!!! UNFINISHED function !!!
-
-projectedCircleWithMatrix m r p = 
-  p' <- projectPtWithMatrix p
-  let hs = realToFrac $ hScale pst
-      vs = realToFrac $ vScale pst
-      rf = realToFrac r
-  -- This makes sense if we assume that drawing circles is faster than ellipses
-  -- with two identical radii.
-  if hs == vs
-    then
-    return $ fill $ circle p' (rf * hs)
-    else
-    return $ fill $ ellipse p' (rf * hs) (rf * vs)
-
--}
 
 testRasterificTypes1 :: MonadState (PState Double) m => m (Drawing px ())
 testRasterificTypes1 =  do
@@ -235,28 +203,8 @@ testRasterificTypes1 =  do
       c = do projectedCircle v1 r1
              projectedCircle v2 r2
              projectedCircle v3 r3
-{-
-  c1 <- lift $ fill $ circle (GL.V2 0 0) 30
-  c2 <- lift $ stroke 4 JoinRound (CapRound, CapRound) $
-        circle (GL.V2 400 200) 40
-  rec1 <- lift $ withTexture (uniformTexture recColor) .
-        fill $ rectangle (GL.V2 100 100) 200 100
-  -}      
   c
 
-
-{-
-*Main L Control.Monad.State Graphics.Rasterific GL Graphics.Rasterific.Texture> v = Vec2 1.4 0.8
-*Main L Control.Monad.State Graphics.Rasterific GL Graphics.Rasterific.Texture> r = 0.2
-*Main L Control.Monad.State Graphics.Rasterific GL Graphics.Rasterific.Texture> pc = projectedCircle v r
-*Main L Control.Monad.State Graphics.Rasterific GL Graphics.Rasterific.Texture> (drawing,pst') = runState pc pstTest
-
-Create image: img = renderDrawing 1600 1200 white $ withTexture (uniformTexture drawColor) $ drawing
-
--}
-
-
---writeWrappedImg img =
 
 white = PixelRGBA8 255 255 255 255
 drawColor = PixelRGBA8 0 0x86 0xc1 255
@@ -269,32 +217,6 @@ pstTest =
       vScale = abs vDiag * 2
   in
     PState mTest hScale vScale
-
-
---testRasterificWrapper1 :: StateT (PState Double) m (Drawing PixelRGBA8)
---testRasterificWrapper1 :: StateT (PState Double) (Drawing px)
-
-{-
-testRasterificWrapper1 = do
-  let greyInd = 0
-      m = transformationMatrix (pul,plr,pll) (pscrul,pscrlr,pscrll)
-      colr = PixelRGBA8 255 0 0 255
-      bkgrd = PixelRGBA8 greyInd 10 greyInd 255
-      v = Vec2 0.3 0.4
-      r = 0.25
-  putPst m
-
-  let pc = projectedCircle v r
-      img = renderDrawing 1600 1200 bkgrd $
-            withTexture (uniformTexture colr) $ do
-        fill $ circle (GL.V2 0 0) 30
-        pc
---        testRasterificTypes1
-        --
-
-  return img
-  --writePng "testwrapper.png" img
--}
 
 
 (|+) :: Num a => Vec2 a -> Vec2 a -> Vec2 a
