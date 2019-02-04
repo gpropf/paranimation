@@ -12,7 +12,7 @@ import Control.Monad.State
 
 type InterpState x y = [(x,y)]
 
-data InterpList x y = InterpList [(x,y)]
+data InterpList x y = InterpList [(x,y)] deriving (Show)
 
 class (Ord x, Eq x, Eq y, Num x) => Interpolable x y where
   x2y :: x -> y

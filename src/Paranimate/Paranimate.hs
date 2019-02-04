@@ -13,7 +13,6 @@ import Graphics.Rasterific
 import Graphics.Rasterific.Texture
 import Graphics.Rasterific.Linear as GL
 import Graphics.Rasterific.Transformations as GT
---import Graphics.Rasterific.Command
 import Data.Map
 import Control.Monad
 import Control.Monad.State
@@ -78,6 +77,29 @@ projectPtWithMatrix m p =
   let p3d = (lv2_lv3 . vec2_lv2) p
   in
     lv3_glv2 $ p3d *! m
+
+
+prefix = "PARANIMATE_"
+
+parametricTransform paramHash t =
+  let (IVC ul) = prefixedValue "ul"
+      (IVC lr) = prefixedValue "lr"
+      (IVC ll) = prefixedValue "ll"
+--      (IVC imgul) = prefixedValue "imgul"
+      (IVC imglr) = prefixedValue "geom"
+--      (IVC imgll) = prefixedValue "imgll"
+      imgll = 0 +: (imag imglr)
+      imgul = 0 +: 0
+  in
+    transformationMatrix (ul,lr,ll) (imgul,imglr,imgll)
+    where
+      prefixedValue valName = interpolatedValue
+                              linearInterpolate t (prefix ++ valName)
+                              paramHash
+      
+  
+
+
 
 {- Matrix and vector operation code >>>---------------------------}
 
@@ -184,28 +206,47 @@ linearInterpolate (t1, v1) (t2, v2) t =
  the linear interpolator. -}    
 interpolatedValue
   :: (Ord a, Ord k) =>
-     ((a, b) -> (a, b) -> a -> t)
-     -> a -> k -> Data.Map.Map k [(a, b)] -> t
+     ((a, b) -> (a, b) -> a -> b)
+     -> a -> k -> Data.Map.Map k [(a, b)] -> b
 interpolatedValue interpFn t keyStr hash =
   let curvePoints = fromMaybe [] $ Data.Map.lookup keyStr hash
   in
     valueOnCurve interpFn curvePoints t
 
-{- -}
+{- valueOnCurve: workhorse function for interpolatedValue function. This
+ where interpFn is actually run to find the in-between value from a
+ pair of endpoints and a single independent variable value. -}
 valueOnCurve
-  :: Ord a => ((a, b) -> (a, b) -> a -> t) -> [(a, b)] -> a -> t
+  :: Ord a => ((a, b) -> (a, b) -> a -> b) -> [(a, b)] -> a -> b
 valueOnCurve interpFn curvePoints t =
-  let (lts,gts) = Data.List.partition (\(tn,vn) -> t >= tn) curvePoints
-  in
-    case gts of
-      [] ->
-        let (p:ps) = reverse lts
-        in
-          interpFn p (head ps) t
-      gts' -> interpFn (last lts) (head gts') t
+  -- FIXME! This is a mess and we need a better way to handle single
+  -- data pairs and independent values outside the curvePoints list.
+  if length curvePoints < 2 then
+    let (iv, dv) = head curvePoints
+    in
+      dv
+  else
+    let (lts,gts) = Data.List.partition (\(tn,vn) -> t >= tn) curvePoints
+    in
+      case gts of
+        [] ->
+          let (p:ps) = reverse lts
+          in
+            interpFn p (head ps) t
+        gts' -> interpFn (last lts) (head gts') t
 
-
-
+{- makeImageList: This func is used by the main program to build the
+ series of frames using the module-specific makeFrameFn, the
+ module-specific paramHash and a list of random number generators and
+ a list of independant variable values. The RNGs are provided as a
+ convenience to the module writer and also allow the modules to remain
+ purely functional while making use of (pseudo-) random
+ processes. This func is evaluated using Haskell's
+ Control.Parallel.Strategies module so as to create the frames in
+ parallel using multiple cores. I have found this approach to be
+ roughly 7 times faster than simple serial processing on my 6-core
+ Intel Linux machine. To disable it simply substitute fs for fs' as
+ the return value. -}
 makeImageList
   :: (Map [Char] [(Double, IV Double)] -> StdGen -> Double -> Image PixelRGBA8)
   -> Data.Map.Map [Char] [(Double, IV Double)]
@@ -217,7 +258,12 @@ makeImageList makeFrameFn paramHash gs rangeT
     in
       fs'
 
-
+{- writeImageList: This is where the program really starts. This is
+ called from main and creates the RNGs and the image filenames and
+ then calls makeImageList above. It then writes the resulting image
+ files to disk. It passes makeFrameFn and paramHash on through to
+ makeImageList. Doing this allow us to isolate impure code (filesystem
+ access and RNG creation) here. -}
 writeImageList
   :: (Map [Char] [(Double, IV Double)] -> StdGen -> Double -> Image PixelRGBA8)
   -> Map [Char] [(Double, IV Double)]

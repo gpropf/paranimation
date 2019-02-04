@@ -86,34 +86,4 @@ sequenceFrames mw g (start,step,end) baseFilename =
     let rng = [start,start+step..end]
         gs = makeGs (length rng) g []
     sequence_ $ (writeImageList (makeFrameFn mw) (pHash mw) baseFilename gs rng)
-{-
-        frameActions = writeImageList (makeFrameFn mw) (pHash mw) baseFilename gs rng
---    putStrLn "FOOO"
-        frameActions' = frameActions `using` parList rpar
-    mapM_ (\x -> do x) frameActions'
--}
 
-{-
-zipTest mw baseFilename g =
-  let rngI = [(0::Int)..10]
-      rngT = [(0::Double)..10]
-  in
-    zipWith
-    (\i t -> makeParFrame mw baseFilename g i t)
-    rngI
-    rngT
-
-  -}  
-{-
- ior <- (writeImageList (makeFrameFn mw) (pHash mw) baseFilename gs rng)
-    let ior' = ior `using` parList rseq
-    mapM_ (\x -> return x) ior'
-
-
-----------------
-
-    imgActions <- (writeImageList (makeFrameFn mw) (pHash mw) baseFilename gs rng)
-    imgActions `usingIO` parList rpar
-    --mapM_ (\x -> return x) imgActions'
-    --imgActions'
--}

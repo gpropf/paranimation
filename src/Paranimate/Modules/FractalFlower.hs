@@ -29,13 +29,15 @@ viewportSize = 2.5
 
 paramHash :: Data.Map.Map [Char] [(Double, IV Double)]
 paramHash = fromList ([("pwr", [(0.0, IV (-0.0)),(1000.0, IV 10.0)])
-                      , ("ul", [(0.0, IVC ((-viewportSize) +: viewportSize)),(1000.0, IVC ((-viewportSize) +: viewportSize))])
-                      , ("lr", [(0.0, IVC ((viewportSize) +: (-viewportSize))),(1000.0, IVC ((viewportSize) +: (-viewportSize)))])
-                      , ("ll", [(0.0, IVC ((-viewportSize) +: (-viewportSize))),(1000.0, IVC ((-viewportSize) +: (-viewportSize)))])
+                      , (prefix ++ "ul", [(0.0, IVC ((-viewportSize) +: viewportSize)),(1000.0, IVC ((-viewportSize) +: viewportSize))])
+                      , (prefix ++ "lr", [(0.0, IVC ((viewportSize) +: (-viewportSize))),(1000.0, IVC ((viewportSize) +: (-viewportSize)))])
+                      , (prefix ++ "ll", [(0.0, IVC ((-viewportSize) +: (-viewportSize))),(1000.0, IVC ((-viewportSize) +: (-viewportSize)))])
+                     -- , (prefix ++ "geom", [(0.0, IVC (1600 +: 1200)),(1000.0, IVC (1600 +: 1200))])
+                      , (prefix ++ "geom", [(0.0, IVC (800.0 +: 600.0))])
 
                       , ("accelCoeff", [(0.0,IV 0.2),(1000.0,IV 0.2)])])
 
-{- Screen size stays constant -}
+{- Screen size stays constant 
 scrul = 0.0 +: 0.0
 scrlr = 1600.0 +: 1200.0
 scrll = 0 +: 1200.0
@@ -43,7 +45,7 @@ scrll = 0 +: 1200.0
 ul = (-2.0) +: 2.0
 lr = 2.0 +: (-2.0)
 ll = (-2.0) +: (-2.0)
-
+-}
 {-         
 makeFrame :: Data.Map.Map [Char] [(Double, IV Double)]
   -> StdGen -> Double
@@ -78,11 +80,13 @@ makeFrame paramHash g t = do
       bkgrd = PixelRGBA8 greyInd 10 greyInd 255
       (IV accelCoeff) = interpolatedValue linearInterpolate t "accelCoeff" paramHash
       (IV pwr) = interpolatedValue linearInterpolate t "pwr" paramHash
-      (IVC ul) = interpolatedValue linearInterpolate t "ul" paramHash
+      m = parametricTransform paramHash t
+     {-  (IVC ul) = interpolatedValue linearInterpolate t "ul" paramHash
       (IVC lr) = interpolatedValue linearInterpolate t "lr" paramHash
       (IVC ll) = interpolatedValue linearInterpolate t "ll" paramHash
 
       m = transformationMatrix (ul,lr,ll) (scrul,scrlr,scrll)
+      -}
       
       pmInits = (Data.List.map (\v -> pm { vel = v }) $ Data.List.map (vec2Scale 1) $ radialVectors 600)-- `using` parList rpar
       tracks = (Data.List.map (\pm -> track (accelerate accelCoeff pwr) (200, pm)) $ pmInits) -- `using` parList rpar
@@ -93,13 +97,19 @@ makeFrame paramHash g t = do
       tracksTransposedFixed = Data.List.map fixIndices $ reverse $ everyf skipn tracksTransposed
       tracksChunked = (Data.List.map chunkTrack tracksTransposedFixed) -- `using` parList rpar
       tracksChunked2 = (Data.List.map chunkTrack $ everyf skipn tracks) -- `using` parList rpar
-      img = renderDrawing 1600 1200 bkgrd $
+      (IVC geom) = prefixedValue "geom"
+      img = renderDrawing (round . real $ geom) (round . imag $ geom) bkgrd $
+--      img = renderDrawing 800 600 bkgrd $
         do          
           mapM_ (drawTrackWithMatrix False m) tracksChunked
           mapM_ (drawTrackWithMatrix True m) tracksChunked2
 
     in
     img
+    where
+      prefixedValue valName = interpolatedValue
+                              linearInterpolate t (prefix ++ valName)
+                              paramHash
 --    (tracks, tracksTransposed, tracksChunked)
 
 
