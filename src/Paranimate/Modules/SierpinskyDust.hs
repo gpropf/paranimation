@@ -11,11 +11,13 @@ import Data.List
 import Number.Complex
 import Algebra.Transcendental
 import Graphics.Rasterific
-import Paranimate.Paranimate
 import System.Random
 import Number.Complex
 import Algebra.Ring( C )
 import Control.Parallel.Strategies
+
+import Paranimate.Paranimate
+import Paranimate.Deprecated
 
 
 paramHash :: Data.Map.Map [Char] [(Double, IV Double)]
