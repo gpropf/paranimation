@@ -49,6 +49,7 @@ extra-deps:
 - mtl-2.2.2
 - free-5.1
 - aeson-1.4.2.0
+- bytestring-0.10.8.2
 
 #- complex-generic-0.1.1.1
 #- split

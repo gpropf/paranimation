@@ -27,6 +27,7 @@ import Linear as L
 import Control.Monad.Free.Church( F, fromF )
 import GHC.Generics
 import Data.Aeson
+import Data.ByteString.Lazy
 
 
 
@@ -41,7 +42,7 @@ data ModuleWorkers = ModuleWorkers { pHash :: Data.Map.Map [Char] [(Double, IV D
 type TransformMatrix = L.V3 (L.V3 Double)
 
 everyf n [] = []
-everyf n as  = head as : everyf n (Data.List.drop n as)
+everyf n as  = Data.List.head as : everyf n (Data.List.drop n as)
 
 {-<<< Matrix and vector operation code: -}                          
 transformationMatrix (ul1,lr1,ll1) (ul2,lr2,ll2) =
@@ -78,9 +79,31 @@ projectPtWithMatrix m p =
   in
     lv3_glv2 $ p3d *! m
 
-
+{- prefix: This is the "magic" string that prefixes all configuration
+ values that we reserve for special use here. This is intended to make
+ namespace collisions with user defined values very unlikely. -}
 prefix = "PARANIMATE_"
 
+
+{- parametricTransform: Takes the paramHash map that is passed to
+ makeFrameFn and pulls out several "magic" values prefixed with the
+ global 'prefix' string above. The first 3 are the vertices of a
+ triangle defining the viewport in the virtual space. A typical
+ Mandelbrot set for instance uses a window centered on the origin
+ extending for 2 units in the x and y directions making a 4x4 unit
+ window. The defining triangle for this would probably be ul: (-2,2),
+ lr: (2,-2), and ll: (-2,-2). The final "magic" value is called
+ <prefix>geom which simply defines the lower right corner of the
+ images in pixels. A 1920x1080 image is thus just a single value of
+ lr: (1920,1080). From this we derives the other 2 corners of the
+ image triangle. The ul value is always (0,0), the ll value is, in
+ this case, (0,1080). Once these triangles are defined we do some
+ matrix algebra to derive a transformation matrix that can be used to
+ map things from virtual coordinates (viewport coords) to real pixel
+ values. -}
+parametricTransform :: (RealFrac a, Algebra.Ring.C a) =>
+  Data.Map.Map [Char] [(a, IV a)]
+  -> a -> L.V3 (L.V3 a)
 parametricTransform paramHash t =
   let (IVC ul) = prefixedValue "ul"
       (IVC lr) = prefixedValue "lr"
@@ -221,8 +244,8 @@ valueOnCurve
 valueOnCurve interpFn curvePoints t =
   -- FIXME! This is a mess and we need a better way to handle single
   -- data pairs and independent values outside the curvePoints list.
-  if length curvePoints < 2 then
-    let (iv, dv) = head curvePoints
+  if Data.List.length curvePoints < 2 then
+    let (iv, dv) = Data.List.head curvePoints
     in
       dv
   else
@@ -230,10 +253,10 @@ valueOnCurve interpFn curvePoints t =
     in
       case gts of
         [] ->
-          let (p:ps) = reverse lts
+          let (p:ps) = Data.List.reverse lts
           in
-            interpFn p (head ps) t
-        gts' -> interpFn (last lts) (head gts') t
+            interpFn p (Data.List.head ps) t
+        gts' -> interpFn (Data.List.last lts) (Data.List.head gts') t
 
 {- makeImageList: This func is used by the main program to build the
  series of frames using the module-specific makeFrameFn, the
@@ -253,7 +276,7 @@ makeImageList
   -> [StdGen] -> [Double]
   -> [Codec.Picture.Image Codec.Picture.PixelRGBA8]
 makeImageList makeFrameFn paramHash gs rangeT
-  = let fs = Prelude.zipWith (makeFrameFn paramHash) gs rangeT
+  = let fs = Data.List.zipWith (makeFrameFn paramHash) gs rangeT
         fs' = fs `using` parList rpar
     in
       fs'
@@ -269,14 +292,33 @@ writeImageList
   -> Map [Char] [(Double, IV Double)]
   -> [Char] -> [StdGen] -> [Double] -> [IO ()]
 writeImageList makeFrameFn paramHash baseFilename gs rangeT =
-  let lenRangeT = length rangeT
-      numZeros = length (show lenRangeT)
+  let lenRangeT = Data.List.length rangeT
+      numZeros = Data.List.length (show lenRangeT)
       imageIndexes = [0..lenRangeT]
       fmtString = "%0" ++ show numZeros ++ "d"
       fmt x = printf fmtString x
   in
-    zipWith
+    Data.List.zipWith
     (\fname image -> Codec.Picture.writePng fname image)
     (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes)
     (makeImageList makeFrameFn paramHash gs rangeT)
 
+
+data ModuleConfig = ModuleConfig {
+  vecMap :: Data.Map.Map [Char] [(Double, Vec2 Double)],
+  dblMap :: Data.Map.Map [Char] [(Double, Double)]
+  } deriving (Show, Generic)
+
+
+instance ToJSON ModuleConfig
+instance FromJSON ModuleConfig
+
+
+testMC = ModuleConfig
+  (Data.Map.fromList ([("v1", [(0.0, Vec2 3.0 4.0),(10.0, Vec2 13.0 14.0)]),
+                       ("v2", [(0.0, Vec2 6.0 7.0),(11.0, Vec2 15.0 19.0)])]))
+
+  (Data.Map.fromList ([("foo", [(0.0,4.5),(20.0,3.14159)]),
+                       ("bar", [(0.0,8.5),(21.0,9.14159)])]))
+
+  

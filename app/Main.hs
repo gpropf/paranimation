@@ -32,7 +32,7 @@ params = Params
            <> short 'q'
            <> help "Whether to be quiet" )
          <*> option auto
-         ( long "paramRange"
+         ( long "range"
            <> short 'r'
            <> help "Range of values for independent variable: (start, step, end)"
            <> showDefault
@@ -48,6 +48,8 @@ main = runModule =<< execParser opts
      <> progDesc "Generate a sequence of frames using module MODULENAME"
      <> header "paranimate - generate animations based on changing parameters." )
 
+
+{- We force the "quiet" flag to False for now. -}
 runModule :: Params -> IO ()
 runModule (Params m False rng) =
   do
