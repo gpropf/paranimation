@@ -306,22 +306,11 @@ writeImageList makeFrameFn paramHash baseFilename gs rangeT =
     (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes)
     (makeImageList makeFrameFn paramHash gs rangeT)
 
-data Geom = Geom {
-  ul :: Vec2 Double,
-  lr :: Vec2 Double,
-  ll :: Vec2 Double,
-  imagelr :: Vec2 Double
-  } deriving (Show, Generic)
-
-instance ToJSON Geom
-instance FromJSON Geom
-  
-
 
 data ModuleConfig = ModuleConfig {
   vecMap :: Data.Map.Map [Char] [(Double, Vec2 Double)],
   dblMap :: Data.Map.Map [Char] [(Double, Double)],
-  geom :: Geom
+  geomMap :: Data.Map.Map [Char] [(Double, Vec2 Double)]
   } deriving (Show, Generic)
 
 
@@ -344,6 +333,10 @@ testMC = ModuleConfig
 
   (Data.Map.fromList ([("foo", [(0.0,4.5),(20.0,3.14159)]),
                        ("bar", [(0.0,8.5),(21.0,9.14159)])]))
-  (Geom (Vec2 (-2) 2) (Vec2 2 (-2)) (Vec2 (-2) (-2)) (Vec2 1600 1200))
+
+  (Data.Map.fromList ([("ul", [(0.0, Vec2 (-2.0) 2),(1000.0, Vec2 (-2.0) 2)]),
+                       ("lr", [(0.0, Vec2 2.0 (-2.0)),(1000.0, Vec2 2.0 (-2.0))]),
+                       ("ll", [(0.0, Vec2 (-2.0) (-2.0)),(1000.0, Vec2 (-2.0) (-2.0))]),
+                       ("imagelr", [(0.0, Vec2 1600 1200),(1000.0, Vec2 1600 1200)])]))
 
   
