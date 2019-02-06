@@ -43,7 +43,8 @@ library
               , mtl
               , free
               , aeson
-              , bytestring             
+              , bytestring
+              , text             
   exposed-modules:
                   Paranimate.Paranimate
                 , Paranimate.Deprecated
@@ -73,7 +74,8 @@ executable paranimate-exe
               , mtl
               , free
               , aeson
-              , bytestring             
+              , bytestring
+              , text
   other-modules:
       Paths_paranimate
   default-language: Haskell2010

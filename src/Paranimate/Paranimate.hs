@@ -1,6 +1,7 @@
 --{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies
 --    , FlexibleContexts, FlexibleInstances, AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts, DeriveGeneric, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, DeriveGeneric, FlexibleInstances,
+ RecordWildCards, OverloadedStrings #-}
 --, DataKinds #-}
 
 
@@ -28,7 +29,7 @@ import Control.Monad.Free.Church( F, fromF )
 import GHC.Generics
 import Data.Aeson
 import Data.ByteString.Lazy
-
+import qualified Data.Text as T
 
 
 {- ModuleWorkers: A convenience type that contains the two elements that
@@ -139,6 +140,8 @@ data Vec2 a = Vec2 { x :: a, y :: a } deriving (Show, Generic)
 
 instance ToJSON (Vec2 Int)
 instance FromJSON (Vec2 Int)
+
+    
 instance ToJSON (Vec2 Double)
 instance FromJSON (Vec2 Double)
 
@@ -303,15 +306,36 @@ writeImageList makeFrameFn paramHash baseFilename gs rangeT =
     (Prelude.map (\index -> baseFilename ++ "-" ++ fmt index ++ ".png") imageIndexes)
     (makeImageList makeFrameFn paramHash gs rangeT)
 
+data Geom = Geom {
+  ul :: Vec2 Double,
+  lr :: Vec2 Double,
+  ll :: Vec2 Double,
+  imagelr :: Vec2 Double
+  } deriving (Show, Generic)
+
+instance ToJSON Geom
+instance FromJSON Geom
+  
+
 
 data ModuleConfig = ModuleConfig {
   vecMap :: Data.Map.Map [Char] [(Double, Vec2 Double)],
-  dblMap :: Data.Map.Map [Char] [(Double, Double)]
+  dblMap :: Data.Map.Map [Char] [(Double, Double)],
+  geom :: Geom
   } deriving (Show, Generic)
 
 
 instance ToJSON ModuleConfig
 instance FromJSON ModuleConfig
+
+{-
+instance FromJSON ModuleConfig where
+   parseJSON = withObject "moduleconfig" $ \o -> do
+    vecMap <- o .: "vecMap"
+    dblMap <- o .: "dblMap"
+    return ModuleConfig{..}
+-}
+    
 
 
 testMC = ModuleConfig
@@ -320,5 +344,6 @@ testMC = ModuleConfig
 
   (Data.Map.fromList ([("foo", [(0.0,4.5),(20.0,3.14159)]),
                        ("bar", [(0.0,8.5),(21.0,9.14159)])]))
+  (Geom (Vec2 (-2) 2) (Vec2 2 (-2)) (Vec2 (-2) (-2)) (Vec2 1600 1200))
 
   

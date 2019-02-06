@@ -33,7 +33,7 @@ paramHash = fromList ([("pwr", [(0.0, IV (-0.0)),(1000.0, IV 10.0)])
                       , (prefix ++ "lr", [(0.0, IVC ((viewportSize) +: (-viewportSize))),(1000.0, IVC ((viewportSize) +: (-viewportSize)))])
                       , (prefix ++ "ll", [(0.0, IVC ((-viewportSize) +: (-viewportSize))),(1000.0, IVC ((-viewportSize) +: (-viewportSize)))])
                      -- , (prefix ++ "geom", [(0.0, IVC (1600 +: 1200)),(1000.0, IVC (1600 +: 1200))])
-                      , (prefix ++ "geom", [(0.0, IVC (800.0 +: 600.0))])
+                      , (prefix ++ "geom", [(0.0, IVC (800.0 +: 600.0)),(1000.0, IVC (80.0 +: 60.0))])
 
                       , ("accelCoeff", [(0.0,IV 0.2),(1000.0,IV 0.2)])])
 
